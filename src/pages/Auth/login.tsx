@@ -30,7 +30,7 @@ const LoginPage: React.FC = () => {
     console.log('currentUser:', currentUser);
 
     if (currentUser)
-        return <Navigate to='/home' />
+        return <Navigate to='/' />
 
 
 

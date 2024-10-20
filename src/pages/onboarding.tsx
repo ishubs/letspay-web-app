@@ -46,7 +46,7 @@ const Onboarding: React.FC = () => {
 
             setLoading(false);
             message.success('User created successfully');
-            navigate('/home');
+            navigate('/');
             // Handle success (e.g., navigate to another page or show a success message)
         } catch (error) {
             setLoading(false);

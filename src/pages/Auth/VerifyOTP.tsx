@@ -29,7 +29,7 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({ verificationId, setStep }) => {
             if (userDoc.exists()) {
                 // User exists, navigate to the home screen or wherever you want
                 message.success('User found, redirecting...');
-                navigate('/home');  // Redirect to a protected route like Home
+                navigate('/');  // Redirect to a protected route like Home
             } else {
                 // User doesn't exist, navigate to the onboarding screen
                 message.info('New user, redirecting to onboarding...');
