@@ -33,7 +33,7 @@ function App() {
               <Route path="/onboarding" element={<Onboarding />} />
               {/* Protected Routes */}
               <Route element={<ProtectedRoute />}>
-                <Route path="/home" element={<HomePage />} /> {/* Example protected page */}
+                <Route path="/" element={<HomePage />} /> {/* Example protected page */}
               </Route>
             </Routes>
           </Router>
