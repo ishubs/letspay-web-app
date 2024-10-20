@@ -4,11 +4,12 @@ import { PhoneOutlined } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
 import VerifyOTP from './VerifyOTP';
 import { Navigate } from 'react-router-dom';
+import { ConfirmationResult } from 'firebase/auth';
 
 const LoginPage: React.FC = () => {
     const { signInWithPhone, setupRecaptcha, currentUser } = useAuth();
     const [phoneNumber, setPhoneNumber] = useState('');
-    const [verificationId, setVerificationId] = useState('');
+    const [verificationId, setVerificationId] = useState<ConfirmationResult | undefined>();
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
 
@@ -62,7 +63,8 @@ const LoginPage: React.FC = () => {
                     <div id="recaptcha-container"></div>
                 </>
             ) : (
-                <VerifyOTP verificationId={verificationId} setStep={setStep} />
+                <>
+                    {verificationId && <VerifyOTP verificationId={verificationId} setStep={setStep} />}</>
             )}
         </div>
     );

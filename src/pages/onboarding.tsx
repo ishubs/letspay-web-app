@@ -14,15 +14,13 @@ const Onboarding: React.FC = () => {
         setLoading(true);
         try {
 
+            if (!auth.currentUser) {
+                throw new Error('User not found');
+            }
+
             await updateProfile(auth.currentUser, { displayName: values.firstName }).catch(
                 (err) => console.log(err)
             );
-
-            // create an entry in the limit collection for the user
-            // the object should have the following fields
-            // - userId: the user's uid
-            // - availableLimit: 0
-            // - totalLimit: 0
 
             await setDoc(doc(db, 'limits', JSON.parse(localStorage.getItem('user') || '{}').uid), {
                 userId: JSON.parse(localStorage.getItem('user') || '{}').uid,

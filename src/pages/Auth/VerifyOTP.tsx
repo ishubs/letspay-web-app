@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { Input, Button, Form, message } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { auth, db } from '../../firebase';  // Import Firestore (db) and Firebase auth
+import { db } from '../../firebase';  // Import Firestore (db) and Firebase auth
 import { doc, getDoc } from 'firebase/firestore';
-
+import { ConfirmationResult } from 'firebase/auth';
 interface VerifyOTPProps {
-    verificationId: any;
-    setStep: any;
+    verificationId: ConfirmationResult;
+    setStep: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const VerifyOTP: React.FC<VerifyOTPProps> = ({ verificationId, setStep }) => {

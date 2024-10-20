@@ -1,12 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { Alert, Button, Card, Divider } from 'antd';
-import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
+import React, { useEffect } from 'react';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { auth, db } from '../firebase';
-import { PlusOutlined } from '@ant-design/icons';
 
 const Home: React.FC = () => {
 
-    const [transactions, setTransactions] = useState<any[]>([]);
+    // const [transactions, setTransactions] = useState<any[]>([]);
 
     useEffect(() => {
         getRecentTransactions();
@@ -35,7 +33,7 @@ const Home: React.FC = () => {
     return (
         <div className='flex flex-col gap-2'>
             <h1>Recent Transactions</h1>
-            {
+            {/* {
                 transactions.map((cashback, index) => (
                     <Card className='flex flex-col gap-2 shadow-md'>
                         <div className='flex justify-between'>
@@ -51,7 +49,7 @@ const Home: React.FC = () => {
             }
             {
                 transactions.length === 0 && <Alert message="No recent transactions" type="info" />
-            }
+            } */}
         </div>
     );
 };

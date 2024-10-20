@@ -1,4 +1,12 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { ConfirmationResult } from 'firebase/auth';
+
+// Extend the Window interface to include recaptchaVerifier
+declare global {
+    interface Window {
+        recaptchaVerifier: RecaptchaVerifier;
+    }
+}
 import {
     signInWithPhoneNumber,
     RecaptchaVerifier,
@@ -10,7 +18,7 @@ import { auth } from './../firebase';
 
 interface AuthContextType {
     currentUser: User | null;
-    signInWithPhone: (phoneNumber: string, appVerifier: RecaptchaVerifier) => Promise<any>;
+    signInWithPhone: (phoneNumber: string, appVerifier: RecaptchaVerifier) => Promise<ConfirmationResult>;
     logout: () => Promise<void>;
     setupRecaptcha: (elementId: string) => void;
 }
@@ -59,6 +67,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     const setupRecaptcha = (elementId: string) => {
+
         window.recaptchaVerifier = new RecaptchaVerifier(
             auth,
             elementId,

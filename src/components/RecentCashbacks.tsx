@@ -1,13 +1,27 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Button, Card, Divider } from 'antd';
-import { getFirestore, collection, query, where, getDocs, onSnapshot } from 'firebase/firestore';
+import { Alert, Card, Tag } from 'antd';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../firebase';
-import { PlusOutlined } from '@ant-design/icons';
-import moment from 'moment';
+import { SyncOutlined } from '@ant-design/icons';
 import { FormattedDate } from '../utils/helpers';
 
+interface CashbackRequest {
+    id: string;
+    totalAmount: number;
+    cashbackStatus: "pending" | "approved" | "rejected"; // You can add more statuses as needed
+    createdAt: {
+        seconds: number;
+        nanoseconds: number;
+    };
+    hostId: string;
+    description: string;
+    perPersonAmount: number;
+    participants: string[];
+    status: "pending" | "completed" | "failed"; // Define status options as needed
+}
+
 const Home: React.FC = () => {
-    const [transactions, setTransactions] = useState<any[]>([]);
+    const [transactions, setTransactions] = useState<CashbackRequest[]>([]);
 
     useEffect(() => {
         const unsubscribe = getRecentTransactions();
@@ -22,9 +36,8 @@ const Home: React.FC = () => {
             const q = query(transactionsRef, where('hostId', '==', user.uid));
 
             return onSnapshot(q, (querySnapshot) => {
-                const transactionsData = querySnapshot.docs.map(doc => ({
-                    id: doc.id, // Include the document ID if needed
-                    ...doc.data(),
+                const transactionsData: CashbackRequest[] = querySnapshot.docs.map(doc => ({
+                    ...doc.data() as CashbackRequest,
                 }));
 
                 console.log(transactionsData, "transactions");
@@ -43,15 +56,19 @@ const Home: React.FC = () => {
         <div className='flex flex-col gap-2'>
             <h1>Recent cashbacks</h1>
             {
-                transactions.map((tx, index) => (
-                    <Card className='flex flex-col gap-2 shadow-md'>
-                        <div className='flex justify-between'>
-                            <p>{tx?.description}</p>
-                            <p>{tx?.totalAmount}</p>
-                        </div>
-                        <div className='flex justify-between'>
-                            {tx?.createdAt && <p> {FormattedDate(tx.createdAt)}</p>}
-                            <p>{tx?.cashbackStatus}</p>
+                transactions.map((tx: CashbackRequest) => (
+                    <Card>
+                        <div className='flex flex-col gap-2 '>
+                            <div className='flex justify-between'>
+                                <p className='font-semibold'>{tx?.description}</p>
+                                <p className='font-semibold'>₹{tx?.totalAmount}</p>
+                            </div>
+                            <div className='flex justify-between'>
+                                <p className='text-gray-400'> {FormattedDate(tx?.createdAt)}</p>
+                                <Tag className='m-0' icon={<SyncOutlined spin />} color="processing">
+                                    {tx?.cashbackStatus === 'pending' ? 'Processing' : 'Completed'}
+                                </Tag>
+                            </div>
                         </div>
                     </Card>
                 ))

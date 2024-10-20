@@ -4,19 +4,19 @@ import { PlusOutlined } from '@ant-design/icons';
 import { InputNumber, Input } from 'antd';
 import { collection, getDocs, runTransaction } from 'firebase/firestore';
 import { db, auth } from '../firebase';
-import { setDoc, doc } from 'firebase/firestore';
-import { addDoc, serverTimestamp } from 'firebase/firestore';
-import firebase from 'firebase/compat/app';
+import { doc } from 'firebase/firestore';
+import { serverTimestamp } from 'firebase/firestore';
+import { User } from '../types';
 
 const AddTransaction: React.FC = () => {
     const [visible, setVisible] = useState(false);
-    const [users, setUsers] = useState<any[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
     const [totalAmount, setTotalAmount] = useState<number | null>(null);
     const [description, setDescription] = useState<string>("");
     const [loading, setLoading] = useState(false);
     const [isFormValid, setIsFormValid] = useState(false); // New state to track form validity
-    const amountInputRef = React.createRef<any>();
+    const amountInputRef = React.createRef<HTMLInputElement>();
 
     // Validate the form whenever the inputs change
     useEffect(() => {
@@ -28,7 +28,7 @@ const AddTransaction: React.FC = () => {
     }, [description, totalAmount, selectedUsers]);
 
     useEffect(() => {
-        if (visible) {
+        if (visible && amountInputRef.current) {
             setTimeout(() => {
                 amountInputRef.current?.focus();
             }, 500);
@@ -53,7 +53,7 @@ const AddTransaction: React.FC = () => {
         // remove the current user from the list
         const currentUser = auth.currentUser;
         const filteredUsers = users.filter(user => user.id !== currentUser?.uid);
-        setUsers(filteredUsers);
+        setUsers(filteredUsers as User[]);
     };
 
     const handleUserSelect = (userId: string) => {

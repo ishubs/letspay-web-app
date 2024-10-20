@@ -1,17 +1,32 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Button, Card, Divider, Empty, Tabs } from 'antd';
-import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
+import { Alert, Button, Card, Empty, Tabs } from 'antd';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { auth, db } from '../firebase';
-import { PlusOutlined } from '@ant-design/icons';
+
 import { runTransaction, onSnapshot } from 'firebase/firestore';
 import { getDoc, doc } from 'firebase/firestore';
 import { FormattedDate } from '../utils/helpers';
 
 const { TabPane } = Tabs;
+interface Transaction {
+    createdAt: {
+        seconds: number;
+        nanoseconds: number;
+    };
+    amount: number;
+    hostId: string;
+    userId: string;
+    transactionId: string;
+    status: "pending" | "approved" | "rejected"; // Define status options as needed
+    participantName: string;
+    hostName: string;
+}
+
+
 
 const Home: React.FC = () => {
-    const [incomingRequests, setIncomingRequests] = useState<any[]>([]);
-    const [outgoingRequests, setOutgoingRequests] = useState<any[]>([]);
+    const [incomingRequests, setIncomingRequests] = useState<Transaction[]>([]);
+    const [outgoingRequests, setOutgoingRequests] = useState<Transaction[]>([]);
 
     useEffect(() => {
         const unsubscribeIncoming = fetchIncomingRequests();
@@ -53,9 +68,9 @@ const Home: React.FC = () => {
                     return { ...requestData, hostName };
                 }));
 
-                console.log(requests); // Now includes hostName for each request
+                console.log(requests, "requests"); // Now includes hostName for each request
 
-                setIncomingRequests(requests);
+                setIncomingRequests(requests as Transaction[]);
             });
         }
 
@@ -95,7 +110,7 @@ const Home: React.FC = () => {
 
                 console.log("Outgoing requests: ", requests);
 
-                setOutgoingRequests(requests);
+                setOutgoingRequests(requests as Transaction[]);
             });
         }
 
