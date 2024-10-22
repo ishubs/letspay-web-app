@@ -5,7 +5,9 @@ import RecentCashbacks from '../components/RecentCashbacks';
 import AddTransaction from '../components/AddTransaction';
 import Header from '../components/Header';
 import { auth, db } from '../firebase';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { messaging } from './../firebase'
+import { getToken, onMessage } from 'firebase/messaging'
 
 type Limit = {
     availableLimit: number;
@@ -16,6 +18,65 @@ const Home: React.FC = () => {
 
     const [limit, setLimit] = useState<Limit | null>(null);
     // get the doc from limit collection where userId is equal to current user id
+
+
+    useEffect(() => {
+        requestPermission()
+    }, [])
+
+    function requestPermission() {
+        console.log('Requesting permission...');
+        Notification.requestPermission().then((permission) => {
+            if (permission === 'granted') {
+                console.log('Notification permission granted.');
+                // TODO(developer): Retrieve a registration token for use with FCM.
+                // In many cases once an app has been granted notification permission,
+                // it should update its UI reflecting this.
+                resetUI();
+            } else {
+                console.log('Unable to get permission to notify.');
+            }
+        });
+    }
+
+    function resetUI() {
+        const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY
+        // clearMessages();
+        // showToken('loading...');
+        // Get registration token. Initially this makes a network call, once retrieved
+        // subsequent calls to getToken will return from cache.
+        getToken(messaging, { vapidKey }).then((currentToken) => {
+            if (currentToken) {
+                console.log('currentToken:', currentToken);
+                // sendTokenToServer(currentToken);
+                // updateUIForPushEnabled(currentToken);
+                // update the user doc in the users collection with the token 
+                const user = auth.currentUser;
+                if (user) {
+                    setDoc(doc(db, 'users', user.uid), {
+                        fcmToken: currentToken
+                    }, { merge: true });
+                }
+
+            } else {
+                // Show permission request.
+                console.log('No registration token available. Request permission to generate one.');
+                // // Show permission UI.
+                // updateUIForPushPermissionRequired();
+                // setTokenSentToServer(false);
+            }
+        }).catch((err) => {
+            console.log('An error occurred while retrieving token. ', err);
+            // showToken('Error retrieving registration token.');
+            // setTokenSentToServer(false);
+        });
+
+        onMessage(messaging, (payload) => {
+            console.log("Message received:", payload);
+            // Show the notification in the UI if necessary
+        });
+    }
+
 
     useEffect(() => {
         const unsubscribe = fetchLimit();
@@ -44,20 +105,23 @@ const Home: React.FC = () => {
     return (
         <>
             <Header />
-
-            <div className='h-[100vh] p-4 flex flex-col gap-4 pb-[100px] overflow-scroll'>
+            <div className='p-4 flex flex-col gap-4 overflow-hidden'>
                 {limit && <Card className='flex flex-col shadow-md '>
                     <div className='flex flex-col'>
                         <p className='font-bold'>Available Limit</p>
-                        <h1>₹ {limit?.availableLimit}</h1>
+                        <h1>₹ {limit?.availableLimit.toFixed(2)}</h1>
                     </div>
                     <Divider />
                     <div className='flex justify-between'>
                         <div className='flex flex-col'>
                             <p className='font-bold'>Your bill</p>
-                            <h1>₹ {Number(limit?.totalLimit) - Number(limit?.availableLimit)}</h1>
+                            <h1>₹ {(Number(limit?.totalLimit) - Number(limit?.availableLimit)).toFixed(2)}</h1>
                         </div>
-                        <Button type='primary'>Pay Now</Button>
+                        <Button
+                            onClick={() => {
+                                window.open('https://forms.gle/TcS3muugokV9Mw6Q9', '_blank')
+                            }}
+                            type='primary'>Pay Now</Button>
                     </div>
                     <Alert className='mt-4' message="Bill will be generated on 5th Oct, 2024" type="warning" />
                 </Card>}

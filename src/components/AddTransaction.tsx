@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Checkbox, Drawer, Card } from 'antd';
+import { Button, Checkbox, Drawer, Card, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { InputNumber, Input } from 'antd';
 import { collection, getDocs, runTransaction } from 'firebase/firestore';
@@ -31,6 +31,7 @@ const AddTransaction: React.FC = () => {
         if (visible && amountInputRef.current) {
             setTimeout(() => {
                 amountInputRef.current?.focus();
+                amountInputRef.current?.click();
             }, 500);
         }
     }, [visible]);
@@ -69,16 +70,28 @@ const AddTransaction: React.FC = () => {
     const handleProceed = async () => {
         setLoading(true);
         try {
+            const host = auth.currentUser
             const hostId = auth.currentUser?.uid;
-            if (!hostId) {
+            if (!hostId || !host) {
                 throw new Error('Host ID not found');
             }
 
-            await createTransaction(hostId, selectedUsers, totalAmount || 0);
+            const transactionId = await createTransaction(hostId, selectedUsers, totalAmount || 0);
+
+            const message = `Cashback ₹${totalAmount} to ${auth.currentUser?.displayName} for ${description} with transaction id:${transactionId}, on ${host.phoneNumber}`;
+
+            const url = `https://wa.me/${host.phoneNumber}?text=${encodeURIComponent(message)}`;
+
+            window.open(url, '_blank');
             setVisible(false);
             setTotalAmount(null);
+
             setDescription("");
             setSelectedUsers([]);
+            // send a message to +91 9346009605 on whatsapp with the transaction details
+
+
+
         } catch (error) {
             console.error("Error adding transaction: ", error);
         } finally {
@@ -86,7 +99,7 @@ const AddTransaction: React.FC = () => {
         }
     };
 
-    async function createTransaction(hostId: string, participants: string[], totalAmount: number) {
+    async function createTransaction(hostId: string, participants: string[], totalAmount: number): Promise<string | null> {
         const transactionRef = doc(collection(db, 'transactions'));
 
         try {
@@ -99,6 +112,12 @@ const AddTransaction: React.FC = () => {
                 }
 
                 const currentLimit = limitDoc.data().availableLimit;
+                // Check if the host has enough limit to create the transaction
+                if (currentLimit < totalAmount) {
+                    message.error(`Insufficient limit, available limit: ${currentLimit}`);
+                    throw new Error(`Insufficient limit, available limit: ${currentLimit}`);
+                }
+
                 const perPersonAmount = totalAmount / (participants.length + 1);
                 const updatedLimit = currentLimit - perPersonAmount;
 
@@ -106,9 +125,10 @@ const AddTransaction: React.FC = () => {
                     throw new Error(`Insufficient limit for user ${hostId}`);
                 }
 
+                // Set the transaction data
                 transaction.set(transactionRef, {
                     hostId: hostId,
-                    description,
+                    description,  // Assuming description is available in scope
                     participants,
                     totalAmount,
                     perPersonAmount,
@@ -117,28 +137,37 @@ const AddTransaction: React.FC = () => {
                     cashbackStatus: 'pending'
                 });
 
+                // Create request entries for each participant
                 participants.forEach(participantId => {
                     const requestRef = doc(collection(db, 'requests'));
                     transaction.set(requestRef, {
                         userId: participantId,
                         transactionId: transactionRef.id,
                         amount: perPersonAmount,
+                        description,
                         status: 'pending',
                         hostId: hostId,
                         createdAt: serverTimestamp()
                     });
                 });
 
+                // Update the host's available limit
                 transaction.update(limitRef, {
                     availableLimit: updatedLimit
                 });
 
                 console.log("Transaction, requests, and host limit update created successfully!");
             });
+
+            // Return the ID of the created transaction document
+            return transactionRef.id;
+
         } catch (error) {
             console.error("Transaction failed: ", error);
+            return null;  // In case of error, return null
         }
     }
+
 
     return (
         <div>
@@ -160,6 +189,7 @@ const AddTransaction: React.FC = () => {
                         className='outline-none border-none'
                         prefix="₹"
                         ref={amountInputRef}
+                        value={totalAmount}
                         style={{
                             fontSize: '1.5rem',
                             borderBottom: '1px solid #000',

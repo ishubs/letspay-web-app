@@ -53,7 +53,7 @@ const Home: React.FC = () => {
 
 
     return (
-        <div className='flex flex-col gap-2'>
+        <div className='flex flex-col gap-2 mb-[100px]'>
             <h1>Recent cashbacks</h1>
             {
                 transactions.map((tx: CashbackRequest) => (
@@ -65,9 +65,20 @@ const Home: React.FC = () => {
                             </div>
                             <div className='flex justify-between'>
                                 <p className='text-gray-400'> {FormattedDate(tx?.createdAt)}</p>
-                                <Tag className='m-0' icon={<SyncOutlined spin />} color="processing">
+                                {/* <Tag className='m-0' icon={<SyncOutlined spin />} color="processing">
                                     {tx?.cashbackStatus === 'pending' ? 'Processing' : 'Completed'}
-                                </Tag>
+                                </Tag> */}
+                                {
+                                    tx?.cashbackStatus === 'pending' ? (
+                                        <Tag className='m-0' icon={<SyncOutlined spin />} color="processing">
+                                            Processing
+                                        </Tag>
+                                    ) : (
+                                        <Tag className='m-0' color={tx?.cashbackStatus === 'approved' ? 'success' : 'error'}>
+                                            {tx?.cashbackStatus === 'approved' ? 'Approved' : 'Rejected'}
+                                        </Tag>
+                                    )
+                                }
                             </div>
                         </div>
                     </Card>

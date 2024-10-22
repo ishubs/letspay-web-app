@@ -6,8 +6,10 @@ import './App.css'
 import ProtectedRoute from './ProtectedRoute'
 import HomePage from './pages/Home'
 import Onboarding from './pages/onboarding'
+import TransactionDetails from './pages/TransactionDetails'
 
 function App() {
+
 
 
   return (
@@ -34,6 +36,9 @@ function App() {
               {/* Protected Routes */}
               <Route element={<ProtectedRoute />}>
                 <Route path="/" element={<HomePage />} /> {/* Example protected page */}
+              </Route>
+              <Route element={<ProtectedRoute />}>
+                <Route path="/tx/:id" element={<TransactionDetails />} /> {/* Example protected page */}
               </Route>
             </Routes>
           </Router>
