@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext'
 
 const Header: React.FC = () => {
     const [visible, setVisible] = useState(false);
+    const [notificationVisible, setNotificationVisible] = useState(false);
     const { logout, currentUser } = useAuth();
 
 
@@ -18,6 +19,14 @@ const Header: React.FC = () => {
         setVisible(false);
     };
 
+    const showNotificationDrawer = () => {
+        setNotificationVisible(true);
+    }
+
+    const onCloseNotificationDrawer = () => {
+        setNotificationVisible(false);
+    }
+
     return (
         <>
             <div className='flex px-4  justify-between sticky top-0 pt-8 pb-4 z-30 w-full bg-white'>
@@ -27,7 +36,9 @@ const Header: React.FC = () => {
                         src={profilepic} className='rounded-full h-10 w-10' />
                     <p className='ml-2'>{currentUser?.displayName}</p>
                 </div>
-                <BellOutlined className='text-2xl' />
+                <BellOutlined
+                    onClick={showNotificationDrawer}
+                    className='text-2xl' />
 
             </div>
             <Drawer
@@ -53,6 +64,15 @@ const Header: React.FC = () => {
                         </ol>
                     </Card>
                     <div className='absolute bottom-2 left-1/2 transform -translate-x-1/2 text-center w-full'>v0.0.1.MVP</div>
+                </div>
+            </Drawer>
+            <Drawer
+                placement="right"
+                onClose={onCloseNotificationDrawer}
+                visible={notificationVisible}
+            >
+                <div className='flex gap-2 flex-col'>
+                    coming soon
                 </div>
             </Drawer>
         </>

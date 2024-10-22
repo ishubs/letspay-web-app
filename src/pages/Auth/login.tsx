@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Input, Button } from 'antd';
+import { Form, Input, Button, message } from 'antd';
 import { PhoneOutlined } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
 import VerifyOTP from './VerifyOTP';
@@ -22,6 +22,7 @@ const LoginPage: React.FC = () => {
             setStep(2);
         } catch (error) {
             console.error('Error sending OTP:', error);
+            message.error('Error sending OTP');
         } finally {
             setLoading(false);
         }

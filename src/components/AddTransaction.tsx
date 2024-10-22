@@ -85,7 +85,7 @@ const AddTransaction: React.FC = () => {
             // window.open(url, '_blank');
             // const message = `Cashback ₹${totalAmount || 0} to ${displayName} for ${description} with transaction ID: ${transactionId}, on ${host.phoneNumber}`;
 
-            const url = `https://wa.me/${host.phoneNumber}?text=${encodeURIComponent(message)}`;
+            const url = `https://wa.me/+919346009605?text=${encodeURIComponent(message)}`;
 
             // Create a temporary link element
             const link = document.createElement('a');
