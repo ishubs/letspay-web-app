@@ -80,9 +80,26 @@ const AddTransaction: React.FC = () => {
 
             const message = `Cashback ₹${totalAmount} to ${auth.currentUser?.displayName} for ${description} with transaction id:${transactionId}, on ${host.phoneNumber}`;
 
+            // const url = `https://wa.me/${host.phoneNumber}?text=${encodeURIComponent(message)}`;
+
+            // window.open(url, '_blank');
+            // const message = `Cashback ₹${totalAmount || 0} to ${displayName} for ${description} with transaction ID: ${transactionId}, on ${host.phoneNumber}`;
+
             const url = `https://wa.me/${host.phoneNumber}?text=${encodeURIComponent(message)}`;
 
-            window.open(url, '_blank');
+            // Create a temporary link element
+            const link = document.createElement('a');
+            link.href = url;
+            link.target = '_blank'; // Open in new tab
+
+            // Append to the body
+            document.body.appendChild(link);
+
+            // Programmatically click the link
+            link.click();
+
+            // Remove the link from the document
+            document.body.removeChild(link);
             setVisible(false);
             setTotalAmount(null);
 
@@ -188,6 +205,7 @@ const AddTransaction: React.FC = () => {
                         autoFocus
                         className='outline-none border-none'
                         prefix="₹"
+                        type="number" pattern="[0-9]*"
                         ref={amountInputRef}
                         value={totalAmount}
                         style={{

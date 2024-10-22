@@ -46,7 +46,7 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({ verificationId, setStep }) => {
 
     return (
         <div>
-            <h1 className='text-2xl font-bold mb-4'>Verify OTP</h1>
+            <h1 className='text-2xl font-bold mb-4 mt-16'>Verify OTP</h1>
             <ArrowLeftOutlined className='absolute top-8 left-5'
                 onClick={() => setStep(1)}
             />
@@ -55,10 +55,12 @@ const VerifyOTP: React.FC<VerifyOTPProps> = ({ verificationId, setStep }) => {
                     name="otp"
                     rules={[{ required: true, message: 'Please input your OTP!' }]}
                 >
-                    <Input value={otp} onChange={(e) => setOtp(e.target.value)} />
+                    <Input
+                        type="number" pattern="[0-9]*"
+                        value={otp} onChange={(e) => setOtp(e.target.value)} />
                 </Form.Item>
                 <Form.Item>
-                    <Button loading={loading} className='w-full' type="primary" htmlType="submit">
+                    <Button loading={loading} className='w-full h-[60px]' type="primary" htmlType="submit">
                         Continue
                     </Button>
                 </Form.Item>

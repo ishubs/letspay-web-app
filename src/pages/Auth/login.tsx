@@ -35,10 +35,11 @@ const LoginPage: React.FC = () => {
 
 
     return (
-        <div className='w-[100vw] p-4 h-[100vh] flex flex-col justify-center'>
+        <div className='w-[100vw] p-4 h-full flex flex-col justify-center'>
             {step === 1 ? (
                 <>
-                    <h1 className='text-2xl font-bold mb-4'>Login</h1>
+                    <h1 className='text-2xl font-bold mb-12 mt-8'>Login to Letspay</h1>
+                    <h2 className='text-xl my-8 font-semibold'>Enter Mobile Number</h2>
                     <Form name="login" initialValues={{ remember: true }} onFinish={handlePhoneSignIn}>
                         <Form.Item
                             name="phone"
@@ -48,15 +49,16 @@ const LoginPage: React.FC = () => {
                             ]}
                         >
                             <Input
-                                className='w-full'
+                                type="number" pattern="[0-9]*"
+                                className='w-full h-[60px] border-l-0 border-r-0 border-t-0 border-b-1 rounded-none'
                                 prefix={<PhoneOutlined />}
                                 placeholder="Phone Number"
                                 onChange={(e) => setPhoneNumber(e.target.value)}
                             />
                         </Form.Item>
                         <Form.Item>
-                            <Button loading={loading} type="primary" htmlType="submit" block>
-                                Login
+                            <Button className='h-[60px] text-xl' loading={loading} type="primary" htmlType="submit" block>
+                                Proceed
                             </Button>
                         </Form.Item>
                     </Form>
