@@ -13,3 +13,5 @@ export interface User {
     };
     phoneNumber: string;
 }
+
+export type CashbackStatus = 'pending' | 'success' | 'error';

@@ -66,14 +66,12 @@ const Home: React.FC = () => {
                 where('status', '==', 'pending')
             );
 
-            console.log(user.uid, "user.uid");
 
             return onSnapshot(q, async (querySnapshot) => {
                 const requests = await Promise.all(querySnapshot.docs.map(async (docSnap) => {
                     const requestData = docSnap.data();
                     const hostId = requestData.hostId;
 
-                    // Fetch the host's name from the users collection
                     const userDocRef = doc(db, 'users', hostId);
                     const userDocSnap = await getDoc(userDocRef);
 
@@ -83,11 +81,8 @@ const Home: React.FC = () => {
                         hostName = `${hostData.firstName} ${hostData.lastName}`;
                     }
 
-                    // Return the request along with the hostName
                     return { ...requestData, hostName } as Transaction;
                 }));
-
-                console.log(requests, "requests"); // Now includes hostName for each request
 
                 requests.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
 
@@ -126,13 +121,9 @@ const Home: React.FC = () => {
                     return { ...requestData, participantName } as Transaction;
                 }));
 
-                console.log("Outgoing requests: ", requests);
                 requests.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
 
-                // we need to combine requests with same transactionId
                 const requestsCopy = [...requests] as Request[];
-                console.log(requestsCopy, "requestsCopy");
-                // sort the requests by createdAt in descending order
                 const combinedRequests = combineRequests(requestsCopy);
                 setOutgoingRequests(combinedRequests as OutgoingTransaction[]);
             });
