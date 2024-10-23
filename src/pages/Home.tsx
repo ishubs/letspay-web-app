@@ -128,7 +128,7 @@ const Home: React.FC = () => {
                             }}
                             type='primary'>Pay Now</Button>
                     </div>
-                    <Alert className='mt-4' message="Bill will be generated on 5th Oct, 2024" type="warning" />
+                    <Alert className='mt-4' message="Bill will be generated on 5th Nov, 2024" type="warning" />
                 </Card>}
                 <IncomingRequests />
                 <RecentCashbacks />
