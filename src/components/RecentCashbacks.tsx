@@ -4,11 +4,12 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { SyncOutlined } from '@ant-design/icons';
 import { FormattedDate } from '../utils/helpers';
+import { CashbackStatus } from '../types';
 
 interface CashbackRequest {
     id: string;
     totalAmount: number;
-    cashbackStatus: "pending" | "approved" | "rejected"; // You can add more statuses as needed
+    cashbackStatus: CashbackStatus; // You can add more statuses as needed
     createdAt: {
         seconds: number;
         nanoseconds: number;
@@ -74,8 +75,8 @@ const Home: React.FC = () => {
                                             Processing
                                         </Tag>
                                     ) : (
-                                        <Tag className='m-0' color={tx?.cashbackStatus === 'approved' ? 'success' : 'error'}>
-                                            {tx?.cashbackStatus === 'approved' ? 'Approved' : 'Rejected'}
+                                        <Tag className='m-0' color={tx?.cashbackStatus === 'success' ? 'success' : 'error'}>
+                                            {tx?.cashbackStatus === 'success' ? 'Approved' : 'Rejected'}
                                         </Tag>
                                     )
                                 }
