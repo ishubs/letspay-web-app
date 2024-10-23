@@ -6,6 +6,7 @@ import { auth, db } from '../firebase';
 import { runTransaction, onSnapshot } from 'firebase/firestore';
 import { getDoc, doc } from 'firebase/firestore';
 import { FormattedDate } from '../utils/helpers';
+import { useNavigate } from 'react-router-dom';
 
 const { TabPane } = Tabs;
 interface Transaction {
@@ -40,6 +41,9 @@ interface OutgoingTransaction {
 
 
 const Home: React.FC = () => {
+
+    const navigate = useNavigate();
+
     const [incomingRequests, setIncomingRequests] = useState<Transaction[]>([]);
     const [outgoingRequests, setOutgoingRequests] = useState<OutgoingTransaction[]>([]);
 
@@ -137,9 +141,6 @@ const Home: React.FC = () => {
         return () => { }; // Return an empty function if user is not logged in
     };
 
-
-
-
     const handleAccept = async (requestId: string) => {
         try {
             await runTransaction(db, async (transaction) => {
@@ -189,6 +190,11 @@ const Home: React.FC = () => {
         }
     };
 
+    const handleNavigateTxDetail = (request: OutgoingTransaction) => {
+        // Navigate to the transaction details page
+        navigate(`/tx/${request.transactionId}`, { state: { request } });
+    }
+
     return (
         <div className='flex flex-col gap-2'>
             <Tabs centered defaultActiveKey="1">
@@ -218,7 +224,7 @@ const Home: React.FC = () => {
 
                     {outgoingRequests.length > 0 ? outgoingRequests.map((request, index) => (
                         <>
-                            <Card key={index} className='flex flex-col shadow-md'>
+                            <Card onClick={() => handleNavigateTxDetail(request)} key={index} className='flex flex-col shadow-md'>
                                 <div className='flex justify-between'>
                                     <p className='text-gray-500'>Request for</p>
                                     <p className='text-gray-500'>{FormattedDate(request.createdAt)}</p>
@@ -261,6 +267,7 @@ interface Participant {
     id: string;
     name: string;
     accepted: boolean;
+    status: "pending" | "accepted" | "rejected"; // Define possible statuses
 }
 
 function combineRequests(requests: Request[]): OutgoingTransaction[] {
@@ -278,7 +285,7 @@ function combineRequests(requests: Request[]): OutgoingTransaction[] {
                 status,
                 hostId: request.hostId,
                 createdAt: request.createdAt,
-                participants: [{ id: userId, name: participantName, accepted: status === "accepted" }],
+                participants: [{ id: userId, name: participantName, accepted: status === "accepted", status: status }],
                 noOfAcceptedParticipants: status === "accepted" ? 1 : 0,
             };
         } else {
@@ -288,7 +295,7 @@ function combineRequests(requests: Request[]): OutgoingTransaction[] {
             // Check if the participant already exists
             const existingParticipant = combinedRequests[transactionId].participants.find(participant => participant.id === userId);
             if (!existingParticipant) {
-                combinedRequests[transactionId].participants.push({ id: userId, name: participantName, accepted: status === "accepted" });
+                combinedRequests[transactionId].participants.push({ id: userId, name: participantName, accepted: status === "accepted", status });
                 // Update count of accepted participants
                 if (status === "accepted") {
                     combinedRequests[transactionId].noOfAcceptedParticipants += 1;

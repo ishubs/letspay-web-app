@@ -1,8 +1,8 @@
 import { initializeApp } from "firebase/app";
-// import { connectAuthEmulator, getAuth } from 'firebase/auth';
-// import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { connectAuthEmulator, getAuth } from 'firebase/auth';
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+// import { getAuth } from 'firebase/auth';
+// import { getFirestore } from 'firebase/firestore';
 import { getMessaging } from "firebase/messaging";
 
 const firebaseConfig = {
@@ -22,8 +22,8 @@ export const auth = getAuth(app);
 export const messaging = getMessaging(app);
 
 // Connect to the Firestore emulator
-// if (window.location.hostname === 'localhost') {
-//     connectFirestoreEmulator(db, 'localhost', 8080);
-//     connectAuthEmulator(auth, 'http://localhost:9099');
-// }
+if (window.location.hostname === 'localhost') {
+    connectFirestoreEmulator(db, 'localhost', 8080);
+    connectAuthEmulator(auth, 'http://localhost:9099');
+}
 
