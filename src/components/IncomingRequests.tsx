@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Button, Card, Empty, Tabs } from 'antd';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 
 import { runTransaction, onSnapshot } from 'firebase/firestore';
@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 
 const { TabPane } = Tabs;
 interface Transaction {
+    id: string;
     createdAt: {
         seconds: number;
         nanoseconds: number;
@@ -70,6 +71,8 @@ const Home: React.FC = () => {
             return onSnapshot(q, async (querySnapshot) => {
                 const requests = await Promise.all(querySnapshot.docs.map(async (docSnap) => {
                     const requestData = docSnap.data();
+                    const id = docSnap.id;
+
                     const hostId = requestData.hostId;
 
                     const userDocRef = doc(db, 'users', hostId);
@@ -81,7 +84,7 @@ const Home: React.FC = () => {
                         hostName = `${hostData.firstName} ${hostData.lastName}`;
                     }
 
-                    return { ...requestData, hostName } as Transaction;
+                    return { ...requestData, hostName, id } as Transaction;
                 }));
 
                 requests.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
@@ -135,21 +138,19 @@ const Home: React.FC = () => {
     const handleAccept = async (requestId: string) => {
         try {
             await runTransaction(db, async (transaction) => {
-                // Step 1: Query the requests collection for the request with the given transactionId
-                const requestsRef = collection(db, 'requests');
-                const q = query(requestsRef, where('transactionId', '==', requestId));
-                const querySnapshot = await getDocs(q);
+                // Step 1: Directly reference the request document by its ID (requestId)
+                const requestRef = doc(db, 'requests', requestId);
+                const requestDoc = await transaction.get(requestRef);
 
-                if (querySnapshot.empty) {
+                if (!requestDoc.exists()) {
                     throw new Error('Request does not exist!');
                 }
 
-                // Assuming there's only one document with the matching transactionId
-                const requestDoc = querySnapshot.docs[0];
                 const requestData = requestDoc.data();
 
                 // Step 2: Fetch the user's current limit from the limits collection
                 const userId = requestData.userId;
+
                 const limitRef = doc(db, 'limits', userId);
                 const limitDoc = await transaction.get(limitRef);
 
@@ -169,7 +170,7 @@ const Home: React.FC = () => {
                 }
 
                 // Step 4: Update the request document's status to 'accepted'
-                transaction.update(requestDoc.ref, { status: 'accepted' });
+                transaction.update(requestRef, { status: 'accepted' });
 
                 // Step 5: Update the user's available limit
                 transaction.update(limitRef, { availableLimit: updatedLimit });
@@ -180,6 +181,7 @@ const Home: React.FC = () => {
             console.error('Transaction failed: ', error);
         }
     };
+
 
     const handleNavigateTxDetail = (request: OutgoingTransaction) => {
         // Navigate to the transaction details page
@@ -203,7 +205,7 @@ const Home: React.FC = () => {
                                 </div>
                                 <div className='flex justify-between mt-4 gap-3'>
                                     <Button className='w-1/2'>Decline</Button>
-                                    <Button onClick={() => handleAccept(request.transactionId)} className='w-1/2' type='primary'>Accept</Button>
+                                    <Button onClick={() => handleAccept(request.id)} className='w-1/2' type='primary'>Accept</Button>
                                 </div>
                             </Card>
                         )) : <Empty />}
