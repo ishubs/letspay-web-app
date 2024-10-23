@@ -37,5 +37,5 @@ export async function getCashbackStatus(transactionId: string): Promise<Cashback
     }
 
     const transactionData = transactionDoc.data();
-    return transactionData.status as CashbackStatus;
+    return transactionData.cashbackStatus as CashbackStatus;
 }
