@@ -3,7 +3,6 @@ import { Form, Input, Button, message } from 'antd';
 import { PhoneOutlined } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
 import VerifyOTP from './VerifyOTP';
-import { Navigate } from 'react-router-dom';
 import { ConfirmationResult } from 'firebase/auth';
 
 const LoginPage: React.FC = () => {
@@ -29,9 +28,6 @@ const LoginPage: React.FC = () => {
     };
 
     console.log('currentUser:', currentUser);
-
-    if (currentUser)
-        return <Navigate to='/' />
 
 
 
