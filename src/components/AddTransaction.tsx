@@ -201,6 +201,18 @@ const AddTransaction: React.FC = () => {
                 closable={true}
                 onClose={onClose}
                 visible={visible}
+                styles={{
+                    content: {
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                    },
+                    body: {
+                        display: 'flex',
+                        flexDirection: 'column',
+                        flex: 1,
+                    }
+                }}
             >
                 {step === 0 ? <>
                     <div className='flex flex-col justify-center items-center'>
@@ -226,12 +238,12 @@ const AddTransaction: React.FC = () => {
                             onChange={(e) => setDescription(e.target.value)}
                         />
                     </div>
-                    <div className='mt-4'>
+                    <div className='mt-4 flex flex-1 flex-col overflow-auto'>
                         <h1 className='mb-4'>Split with</h1>
                         {users && (
-                            <div className='max-h-[300px] overflow-auto flex flex-col gap-2'>
+                            <div className=' flex flex-col gap-2'>
                                 {users.map((contact) => (
-                                    <Card className='flex justify-between' key={contact.id}>
+                                    <Card className='flex justify-between ' key={contact.id}>
                                         <Checkbox
                                             checked={selectedUsers.includes(contact.id)}
                                             onChange={() => handleUserSelect(contact.id)}
@@ -247,6 +259,7 @@ const AddTransaction: React.FC = () => {
                                 ))}
                             </div>
                         )}
+
                     </div>
                     <Button
                         loading={loading}
