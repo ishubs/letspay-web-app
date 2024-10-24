@@ -9,9 +9,9 @@ export default defineConfig({
      VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Your App Name',
-        short_name: 'AppName',
-        description: 'Description of your app',
+        name: 'Letspay',
+        short_name: 'Letspay',
+        description: 'Split bills with friends',
         theme_color: '#ffffff',
         background_color: '#ffffff',
         display: 'standalone',
