@@ -132,11 +132,11 @@ const Home: React.FC = () => {
                 {incomingRequests.length > 0 ? incomingRequests.map((request, index) => (
                     <Card key={index} className='flex flex-col shadow-md'>
                         <div className='flex justify-between'>
-                            <p className='text-gray-500'>Request from</p>
+                            <p className='text-gray-500'>{request.hostName}</p>
                             <p className='text-gray-500'>{FormattedTime(request.createdAt)}</p>
                         </div>
                         <div className='flex justify-between mt-2'>
-                            <p>{request.hostName}</p>
+                            <p>{request.description}</p>
                             <p>₹{request.amount}</p>
                         </div>
                         <div className='flex justify-between mt-4 gap-3'>
