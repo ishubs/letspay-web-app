@@ -2,14 +2,60 @@ import profilepic from '../assets/profile-pic.png';
 import { BellOutlined, InfoCircleOutlined } from '@ant-design/icons';
 
 import { Drawer, Button, Card, Modal, Alert } from 'antd';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext'
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../firebase';
 
 const Header: React.FC = () => {
     const [visible, setVisible] = useState(false);
+    const [upiId, setUpiId] = useState('');
     const [notificationVisible, setNotificationVisible] = useState(false);
     const { logout, currentUser } = useAuth();
 
+
+
+    useEffect(() => {
+        getUPIID()
+    }, [])
+
+
+    const getUPIID = async () => {
+
+        try {
+            const user = auth.currentUser;
+
+            if (!user) {
+                throw new Error('User not found');
+            }
+
+            // get the user doc from the users collection
+            const userRef = doc(db, 'users', user.uid)
+
+            const userDoc = await getDoc(userRef)
+
+            if (!userDoc.exists()) {
+                throw new Error('User doc not found');
+            }
+
+            const userData = userDoc.data()
+
+            if (!userData) {
+                throw new Error('User data not found');
+            }
+
+            // if upi id is not present set visible to true
+
+            if (userData.upiId) {
+                console.log('UPI ID:', userData.upiId);
+                setUpiId(userData.upiId);
+            }
+
+            console.log('UPI ID:', upiId);
+        } catch (error) {
+            console.error('Error getting UPI ID:', error);
+        }
+    }
 
     const showDrawer = () => {
         setVisible(true);
@@ -73,6 +119,10 @@ const Header: React.FC = () => {
                     </div>
                     <div className='border p-2 rounded-md'>
                         {currentUser?.phoneNumber}
+                    </div>
+                    <div className='border p-2 rounded-md'>
+                        {/* {currentUser} */}
+                        {upiId ? upiId : 'Add UPI ID'}
                     </div>
                     <Button
                         onClick={logout}

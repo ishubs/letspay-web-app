@@ -10,7 +10,7 @@ const Onboarding: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     // const user = auth.currentUser;
-    const onFinish = async (values: { firstName: string; lastName: string }) => {
+    const onFinish = async (values: { firstName: string; lastName: string, upiId: string }) => {
         setLoading(true);
         try {
 
@@ -40,6 +40,7 @@ const Onboarding: React.FC = () => {
                 firstName: values.firstName,
                 lastName: values.lastName,
                 phoneNumber,
+                upiId: values.upiId,
                 createdAt: new Date(),
                 id: JSON.parse(localStorage.getItem('user') || '{}').uid,
             });
@@ -77,7 +78,14 @@ const Onboarding: React.FC = () => {
                 >
                     <Input />
                 </Form.Item>
-
+                <Form.Item
+                    label="UPI ID"
+                    name="upiId"
+                    rules={[{ required: true, message: 'Please input your UPI Id!' }]}
+                >
+                    <Input
+                    />
+                </Form.Item>
                 <Form.Item>
                     <Button className='w-full' type="primary" htmlType="submit" loading={loading}>
                         Continue

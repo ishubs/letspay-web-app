@@ -8,6 +8,7 @@ import { auth, db } from '../firebase';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { messaging } from './../firebase'
 import { getToken, onMessage } from 'firebase/messaging'
+import AddUPIIDModal from '../components/AddUPIIDModal';
 
 type Limit = {
     availableLimit: number;
@@ -18,7 +19,6 @@ const Home: React.FC = () => {
 
     const [limit, setLimit] = useState<Limit | null>(null);
     // get the doc from limit collection where userId is equal to current user id
-
 
     useEffect(() => {
         requestPermission()
@@ -133,6 +133,7 @@ const Home: React.FC = () => {
                 <IncomingRequests />
                 <RecentCashbacks />
                 <AddTransaction />
+                <AddUPIIDModal />
                 {/* <RecentTransactions /> */}
             </div>
         </>
