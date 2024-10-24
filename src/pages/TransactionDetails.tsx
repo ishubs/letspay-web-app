@@ -1,14 +1,18 @@
 import React, { useEffect } from 'react';
-import { ArrowLeftOutlined, CopyOutlined } from '@ant-design/icons';
-import { Divider, message } from 'antd';
+import { ArrowLeftOutlined, CopyOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Button, Divider, message } from 'antd';
 import { useLocation } from 'react-router-dom';
 import { FormattedDate } from '../utils/helpers';
 import { CashbackStatus, Timestamp } from '../types';
 import { getCashbackStatus, getUserName } from '../services/userService';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 
 interface Participant {
+    id: string;
     name: string;
     status: string;
+    requestId: string;
 }
 
 interface TransactionDetailsProps {
@@ -46,6 +50,26 @@ const TransactionDetails = () => {
         } as TransactionDetailsProps)
     }
 
+
+    const handleRetry = async (requestId: string) => {
+
+        try {
+
+            const requestRef = doc(db, 'requests', requestId);
+
+            await updateDoc(requestRef, {
+                status: 'pending'
+            })
+
+            message.success('Request sent successfully');
+        } catch (err) {
+            console.log(err)
+            message.error('Error retrying request')
+        }
+    }
+
+    console.log(transactionDetails, "transactionDetails")
+
     return (
         <div>
             <div>
@@ -74,6 +98,10 @@ const TransactionDetails = () => {
                                             {participant.status}
                                         </p>
                                     </div>
+                                    {participant.status === 'rejected' && <Button
+                                        onClick={() => handleRetry(participant.requestId)}
+                                        icon={<ReloadOutlined className='text-xs' />}
+                                        className='h-[30px] text-sm'>Retry</Button>}
                                 </div>
                             ))
                         }
@@ -100,3 +128,27 @@ const TransactionDetails = () => {
 export default TransactionDetails;
 
 
+
+
+// {
+//     "transactionId": "0LTHBCA92JN3derDOGy9",
+//         "amount": 15,
+//             "description": "test rejected",
+//                 "status": "pending",
+//                     "cashbackStatus": "pending",
+//                         "hostId": "i159G5kdK8xDScYIl5zDmOIv69j1",
+//                             "createdAt": {
+//         "seconds": 1729770393,
+//             "nanoseconds": 718000000
+//     },
+//     "participants": [
+//         {
+//             "id": "yjnTtq3Iv5NqO1nlsVhKJDhVDItt",
+//             "name": "Shubham Test",
+//             "accepted": false,
+//             "status": "rejected",
+//         }
+//     ],
+//         "noOfAcceptedParticipants": 0,
+//             "hostName": "new User"
+// }

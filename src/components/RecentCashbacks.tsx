@@ -24,6 +24,7 @@ interface Transaction {
     hostName: string;
     description: string;
     cashbackStatus: string;
+    requestId: string;
 }
 
 interface OutgoingTransaction {
@@ -72,6 +73,8 @@ const Home: React.FC = () => {
 
                     // Fetch the participant's name from the users collection
                     const userDocRef = doc(db, 'users', participantId);
+                    const requestId = docSnap.id;
+                    console.log(requestId, "docId")
                     const userDocSnap = await getDoc(userDocRef);
                     const cashbackStatus = await getCashbackStatus(requestData.transactionId);
                     let participantName = '';
@@ -81,7 +84,7 @@ const Home: React.FC = () => {
                     }
 
                     // Return the request along with the participant's name
-                    return { ...requestData, participantName, cashbackStatus } as Transaction;
+                    return { ...requestData, participantName, cashbackStatus, requestId } as Transaction;
                 }));
 
                 requests.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
@@ -145,6 +148,7 @@ interface Request {
     };
     participantName: string;
     cashbackStatus: string;
+    requestId: string;
 }
 
 interface Participant {
@@ -152,6 +156,7 @@ interface Participant {
     name: string;
     accepted: boolean;
     status: "pending" | "accepted" | "rejected"; // Define possible statuses
+    requestId: string;
 }
 
 function combineRequests(requests: Request[]): OutgoingTransaction[] {
@@ -170,7 +175,7 @@ function combineRequests(requests: Request[]): OutgoingTransaction[] {
                 cashbackStatus,
                 hostId: request.hostId,
                 createdAt: request.createdAt,
-                participants: [{ id: userId, name: participantName, accepted: status === "accepted", status: status }],
+                participants: [{ id: userId, name: participantName, accepted: status === "accepted", status: status, requestId: request.requestId }],
                 noOfAcceptedParticipants: status === "accepted" ? 1 : 0,
             };
         } else {
@@ -180,7 +185,7 @@ function combineRequests(requests: Request[]): OutgoingTransaction[] {
             // Check if the participant already exists
             const existingParticipant = combinedRequests[transactionId].participants.find(participant => participant.id === userId);
             if (!existingParticipant) {
-                combinedRequests[transactionId].participants.push({ id: userId, name: participantName, accepted: status === "accepted", status });
+                combinedRequests[transactionId].participants.push({ id: userId, name: participantName, accepted: status === "accepted", status, requestId: request.requestId });
                 // Update count of accepted participants
                 if (status === "accepted") {
                     combinedRequests[transactionId].noOfAcceptedParticipants += 1;

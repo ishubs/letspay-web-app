@@ -80,7 +80,7 @@ const Header: React.FC = () => {
                     <Card className='mt-4' title="Upcoming features">
                         <ol className='list-decimal'>
                             <li>View accepted requests in recent transactions</li>
-                            <li>Get real-time notifications</li>
+                            <li>Retry rejected requests</li>
                             <li>Faster cashbacks</li>
                         </ol>
                     </Card>
