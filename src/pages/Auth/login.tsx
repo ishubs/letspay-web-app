@@ -49,7 +49,7 @@ const LoginPage: React.FC = () => {
                                 type="number" pattern="[0-9]*"
                                 className='w-full h-[60px] border-l-0 border-r-0 border-t-0 border-b-1 rounded-none'
                                 prefix={<PhoneOutlined />}
-                                placeholder="Phone Number"
+                                placeholder="Mobile Number"
                                 onChange={(e) => setPhoneNumber(e.target.value)}
                             />
                         </Form.Item>

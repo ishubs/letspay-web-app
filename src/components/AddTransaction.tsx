@@ -80,7 +80,6 @@ const AddTransaction: React.FC = () => {
             }
 
             const transactionId = await createTransaction(hostId, selectedUsers, totalAmount || 0);
-            setStep(1);
             setTransactionId(transactionId);
             const message = `Cashback ₹${totalAmount} to ${auth.currentUser?.displayName} for ${description} with transaction id:${transactionId}, on ${host.phoneNumber}`;
 
@@ -175,6 +174,7 @@ const AddTransaction: React.FC = () => {
                 transaction.update(limitRef, {
                     availableLimit: updatedLimit
                 });
+                setStep(1);
 
                 console.log("Transaction, requests, and host limit update created successfully!");
             });

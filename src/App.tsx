@@ -7,6 +7,7 @@ import ProtectedRoute from './ProtectedRoute'
 import HomePage from './pages/Home'
 import Onboarding from './pages/onboarding'
 import TransactionDetails from './pages/TransactionDetails'
+import Welcome from './pages/Welcome'
 
 function App() {
 
@@ -31,6 +32,7 @@ function App() {
         <AuthProvider>
           <Router>
             <Routes>
+              <Route path='/welcome' element={<Welcome />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/onboarding" element={<Onboarding />} />
               {/* Protected Routes */}

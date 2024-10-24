@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { ArrowLeftOutlined } from '@ant-design/icons';
-import { Divider } from 'antd';
+import { ArrowLeftOutlined, CopyOutlined } from '@ant-design/icons';
+import { Divider, message } from 'antd';
 import { useLocation } from 'react-router-dom';
 import { FormattedDate } from '../utils/helpers';
 import { CashbackStatus, Timestamp } from '../types';
@@ -81,7 +81,13 @@ const TransactionDetails = () => {
                         <p className='text-xs font-semibold text-gray-600'>Host</p>
                         <p className='text-lg font-semibold'>{transactionDetails?.hostName}</p>
                         {transactionDetails?.createdAt && <p className='text-xs mt-1'>Paid at {FormattedDate(transactionDetails?.createdAt)}</p>}
-                        <p className='text-xs mt-1'>Transaction Id: {transactionDetails?.transactionId}</p>
+                        <p className='text-xs mt-1 flex gap-2'>Transaction Id: {transactionDetails?.transactionId}
+
+                            <CopyOutlined className='text-base' onClick={() => {
+                                navigator.clipboard.writeText(transactionDetails?.transactionId || "")
+                                message.success('Transaction ID copied')
+                            }} />
+                        </p>
                         <p className='text-xs mt-1'>Description: {transactionDetails?.description}</p>
                         <p className='text-xs mt-1'>Status: {transactionDetails?.cashbackStatus}</p>
                     </div>

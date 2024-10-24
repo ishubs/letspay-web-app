@@ -45,7 +45,7 @@ const Header: React.FC = () => {
 
     return (
         <>
-            <div className='flex px-4  justify-between sticky top-0 pt-8 pb-4 z-30 w-full bg-white'>
+            <div className='flex px-4  justify-between sticky top-0 pt-4 pb-4 z-30 w-full bg-white'>
                 <div className='flex justify-center items-center'>
                     <img
                         onClick={showDrawer}

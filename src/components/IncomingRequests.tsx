@@ -17,7 +17,7 @@ interface Transaction {
     hostId: string;
     userId: string;
     transactionId: string;
-    status: "pending" | "approved" | "rejected"; // Define status options as needed
+    status: "pending" | "approved" | "rejected" | "auto_rejected"; // Define status options as needed
     participantName: string;
     hostName: string;
     description: string;
