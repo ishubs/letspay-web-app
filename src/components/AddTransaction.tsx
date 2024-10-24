@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Checkbox, Drawer, Card, message } from 'antd';
+import { Button, Checkbox, Drawer, Card, message, Alert } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { InputNumber, Input } from 'antd';
 import { collection, getDocs, runTransaction } from 'firebase/firestore';
@@ -16,7 +16,10 @@ const AddTransaction: React.FC = () => {
     const [description, setDescription] = useState<string>("");
     const [loading, setLoading] = useState(false);
     const [isFormValid, setIsFormValid] = useState(false); // New state to track form validity
+    const [step, setStep] = useState(0);
+    const [transactionId, setTransactionId] = useState<string | null>(null);
     const amountInputRef = React.createRef<HTMLInputElement>();
+
 
     // Validate the form whenever the inputs change
     useEffect(() => {
@@ -77,7 +80,8 @@ const AddTransaction: React.FC = () => {
             }
 
             const transactionId = await createTransaction(hostId, selectedUsers, totalAmount || 0);
-
+            setStep(1);
+            setTransactionId(transactionId);
             const message = `Cashback ₹${totalAmount} to ${auth.currentUser?.displayName} for ${description} with transaction id:${transactionId}, on ${host.phoneNumber}`;
 
             // const url = `https://wa.me/${host.phoneNumber}?text=${encodeURIComponent(message)}`;
@@ -100,7 +104,6 @@ const AddTransaction: React.FC = () => {
 
             // Remove the link from the document
             document.body.removeChild(link);
-            setVisible(false);
             setTotalAmount(null);
 
             setDescription("");
@@ -199,60 +202,75 @@ const AddTransaction: React.FC = () => {
                 onClose={onClose}
                 visible={visible}
             >
-                <div className='flex flex-col justify-center items-center'>
-                    <p className='text-base mb-2'>Total amount</p>
-                    <InputNumber
-                        autoFocus
-                        className='outline-none border-none'
-                        prefix="₹"
-                        type="number" pattern="[0-9]*"
-                        ref={amountInputRef}
-                        value={totalAmount}
-                        style={{
-                            fontSize: '1.5rem',
-                            borderBottom: '1px solid #000',
-                            borderRadius: 0,
-                        }}
-                        onChange={(value) => setTotalAmount(value as number)}
-                    />
-                    <Input
-                        className='mt-4 text-center'
-                        placeholder="What's this for?"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                    />
-                </div>
-                <div className='mt-4'>
-                    <h1 className='mb-4'>Split with</h1>
-                    {users && (
-                        <div className='max-h-[300px] overflow-auto flex flex-col gap-2'>
-                            {users.map((contact) => (
-                                <Card className='flex justify-between' key={contact.id}>
-                                    <Checkbox
-                                        checked={selectedUsers.includes(contact.id)}
-                                        onChange={() => handleUserSelect(contact.id)}
-                                    >
-                                        <div>
-                                            {contact.firstName} {contact.lastName}
-                                        </div>
-                                        <div>
-                                            {contact.phoneNumber}
-                                        </div>
-                                    </Checkbox>
-                                </Card>
-                            ))}
-                        </div>
-                    )}
-                </div>
-                <Button
-                    loading={loading}
-                    type='primary'
-                    className='w-full mt-4'
-                    onClick={handleProceed}
-                    disabled={!isFormValid} // Disable button if form is invalid
-                >
-                    Proceed
-                </Button>
+                {step === 0 ? <>
+                    <div className='flex flex-col justify-center items-center'>
+                        <p className='text-base mb-2'>Total amount</p>
+                        <InputNumber
+                            autoFocus
+                            className='outline-none border-none'
+                            prefix="₹"
+                            type="number" pattern="[0-9]*"
+                            ref={amountInputRef}
+                            value={totalAmount}
+                            style={{
+                                fontSize: '1.5rem',
+                                borderBottom: '1px solid #000',
+                                borderRadius: 0,
+                            }}
+                            onChange={(value) => setTotalAmount(value as number)}
+                        />
+                        <Input
+                            className='mt-4 text-center'
+                            placeholder="What's this for?"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                        />
+                    </div>
+                    <div className='mt-4'>
+                        <h1 className='mb-4'>Split with</h1>
+                        {users && (
+                            <div className='max-h-[300px] overflow-auto flex flex-col gap-2'>
+                                {users.map((contact) => (
+                                    <Card className='flex justify-between' key={contact.id}>
+                                        <Checkbox
+                                            checked={selectedUsers.includes(contact.id)}
+                                            onChange={() => handleUserSelect(contact.id)}
+                                        >
+                                            <div>
+                                                {contact.firstName} {contact.lastName}
+                                            </div>
+                                            <div>
+                                                {contact.phoneNumber}
+                                            </div>
+                                        </Checkbox>
+                                    </Card>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    <Button
+                        loading={loading}
+                        type='primary'
+                        className='w-full mt-4'
+                        onClick={handleProceed}
+                        disabled={!isFormValid} // Disable button if form is invalid
+                    >
+                        Proceed
+                    </Button>
+                </> :
+                    <div className='flex flex-col justify-center text-center'>
+                        <img className='h-[80px] mx-auto' src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQWN-SLzk5eeEuA9zBJKzsM0qbvtLsKDfJ-w&s" />
+                        <p className='text-center text-xl'>Transaction Successful</p>
+                        <p className='mt-2'>
+                            <span className='text-gray-500'>Transaction id: </span>
+                            {transactionId}</p>
+
+                        <Alert className='mt-4' message="Complete the whatsapp message step to recieve cashback faster" type="info" />
+                        <Button className='mt-6' type='primary' onClick={() => {
+                            setVisible(false)
+                            setStep(0)
+                        }}>Close</Button>
+                    </div>}
             </Drawer>
         </div>
     );

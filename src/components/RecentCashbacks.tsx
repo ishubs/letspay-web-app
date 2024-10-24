@@ -112,15 +112,15 @@ const Home: React.FC = () => {
                         <div className='flex justify-end text-xs'>
                             {/* <p className='text-gray-500'>Request for</p> */}
                         </div>
-                        <div className='flex justify-between text-lg'>
+                        <div className='flex justify-between '>
                             <p className=''>{request.description}</p>
                             <p>₹{request.amount}</p>
                         </div>
-                        <div className='flex justify-between mt-1 text-sm'>
+                        <div className='flex justify-between mt-1 text-xs'>
                             <p> <span className='text-gray-500'>Cashback:</span> {request.cashbackStatus}</p>
                             <p><span className='text-gray-500'>Accepted:</span> {request.noOfAcceptedParticipants} / {request.participants.length}</p>
                         </div>
-                        <p className='text-gray-500 mt-1'>{FormattedTime(request.createdAt)}</p>
+                        <p className='text-gray-500 mt-1 text-xs'>{FormattedTime(request.createdAt)}</p>
 
                     </Card>
                 </>

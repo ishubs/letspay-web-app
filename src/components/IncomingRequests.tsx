@@ -5,7 +5,7 @@ import { auth, db } from '../firebase';
 
 import { runTransaction, onSnapshot } from 'firebase/firestore';
 import { getDoc, doc } from 'firebase/firestore';
-import { FormattedDate } from '../utils/helpers';
+import { FormattedTime } from '../utils/helpers';
 
 interface Transaction {
     id: string;
@@ -133,7 +133,7 @@ const Home: React.FC = () => {
                     <Card key={index} className='flex flex-col shadow-md'>
                         <div className='flex justify-between'>
                             <p className='text-gray-500'>Request from</p>
-                            <p className='text-gray-500'>{FormattedDate(request.createdAt)}</p>
+                            <p className='text-gray-500'>{FormattedTime(request.createdAt)}</p>
                         </div>
                         <div className='flex justify-between mt-2'>
                             <p>{request.hostName}</p>
