@@ -40,7 +40,6 @@ const AddUPIIDModal: React.FC = () => {
             }
 
             const userData = userDoc.data()
-
             if (!userData) {
                 throw new Error('User data not found');
             }

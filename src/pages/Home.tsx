@@ -5,7 +5,7 @@ import RecentCashbacks from '../components/RecentCashbacks';
 import AddTransaction from '../components/AddTransaction';
 import Header from '../components/Header';
 import { auth, db } from '../firebase';
-import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { messaging } from './../firebase'
 import { getToken, onMessage } from 'firebase/messaging'
 import AddUPIIDModal from '../components/AddUPIIDModal';
@@ -31,9 +31,7 @@ const Home: React.FC = () => {
             Notification?.requestPermission().then((permission) => {
                 if (permission === 'granted') {
                     console.log('Notification permission granted.');
-                    // TODO(developer): Retrieve a registration token for use with FCM.
-                    // In many cases once an app has been granted notification permission,
-                    // it should update its UI reflecting this.
+
                     resetUI();
                 } else {
                     console.log('Unable to get permission to notify.');
@@ -58,9 +56,17 @@ const Home: React.FC = () => {
                 // update the user doc in the users collection with the token 
                 const user = auth.currentUser;
                 if (user) {
-                    setDoc(doc(db, 'users', user.uid), {
+                    // updateDoc(doc(db, 'users', user.uid), {
+                    //     fcmToken: currentToken
+                    // }, { merge: true });
+
+                    updateDoc(doc(db, 'users', user.uid), {
                         fcmToken: currentToken
-                    }, { merge: true });
+                    }).then(() => {
+                        console.log('Token added to user doc');
+                    }).catch((err) => {
+                        console.error('Error adding token to user doc:', err);
+                    });
                 }
 
             } else {

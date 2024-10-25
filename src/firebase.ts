@@ -22,7 +22,7 @@ export const auth = getAuth(app);
 export const messaging = getMessaging(app);
 
 // Connect to the Firestore emulator
-if (window.location.hostname === 'localhost') {
+if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
     connectFirestoreEmulator(db, 'localhost', 8080);
     connectAuthEmulator(auth, 'http://localhost:9099');
 }
