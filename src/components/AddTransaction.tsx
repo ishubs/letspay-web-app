@@ -203,7 +203,7 @@ const AddTransaction: React.FC = () => {
                 visible={visible}
                 styles={{
                     content: {
-                        height: '100%',
+                        // height: '100vh',
                         display: 'flex',
                         flexDirection: 'column',
                     },
@@ -211,6 +211,7 @@ const AddTransaction: React.FC = () => {
                         display: 'flex',
                         flexDirection: 'column',
                         flex: 1,
+                        padding: '8px',
                     }
                 }}
             >
@@ -237,9 +238,9 @@ const AddTransaction: React.FC = () => {
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                         />
+                        <h1 className='mt-4 text-left self-start'>Split with</h1>
                     </div>
                     <div className='mt-4 flex flex-1 flex-col overflow-auto'>
-                        <h1 className='mb-4'>Split with</h1>
                         {users && (
                             <div className=' flex flex-col gap-2'>
                                 {users.map((contact) => (
@@ -264,7 +265,7 @@ const AddTransaction: React.FC = () => {
                     <Button
                         loading={loading}
                         type='primary'
-                        className='w-full mt-4'
+                        className='w-full my-8 '
                         onClick={handleProceed}
                         disabled={!isFormValid} // Disable button if form is invalid
                     >
