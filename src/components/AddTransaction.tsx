@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Checkbox, Drawer, Card, message, Alert } from 'antd';
+import { Button, Checkbox, Drawer, Card, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { InputNumber, Input } from 'antd';
 import { collection, getDocs, runTransaction } from 'firebase/firestore';
@@ -19,8 +19,8 @@ const AddTransaction: React.FC = () => {
     const [step, setStep] = useState(0);
     const [transactionId, setTransactionId] = useState<string | null>(null);
     const amountInputRef = React.createRef<HTMLInputElement>();
-
-
+    const [whatsappMessageSent, setWhatsappMessageSent] = useState(false);
+    const [url, setUrl] = useState<string | null>(null);
     // Validate the form whenever the inputs change
     useEffect(() => {
         if (description && totalAmount && selectedUsers.length > 0) {
@@ -89,7 +89,7 @@ const AddTransaction: React.FC = () => {
             // const message = `Cashback ₹${totalAmount || 0} to ${displayName} for ${description} with transaction ID: ${transactionId}, on ${host.phoneNumber}`;
 
             const url = `https://wa.me/+919346009605?text=${encodeURIComponent(message)}`;
-
+            setUrl(url);
             // Create a temporary link element
             const link = document.createElement('a');
             link.href = url;
@@ -279,10 +279,21 @@ const AddTransaction: React.FC = () => {
                             <span className='text-gray-500'>Transaction id: </span>
                             {transactionId}</p>
 
-                        <Alert className='mt-4' message="Complete the whatsapp message step to recieve cashback faster" type="info" />
-                        <Button className='mt-6' type='primary' onClick={() => {
+                        {url && <div className='my-4'> <Button
+                            onClick={() => {
+                                window.open(url || '', '_blank')
+                            }}
+                            className='m-0 p-0' type='link'>Click here</Button> if you have not completed the whatsapp message step</div>}
+
+                        <div>
+                            <Checkbox checked={whatsappMessageSent} onChange={() => {
+                                setWhatsappMessageSent(!whatsappMessageSent)
+                            }} className='mt-4'>I have completed the whatsapp message step</Checkbox>
+                        </div>
+                        <Button disabled={!whatsappMessageSent} className='mt-6' type='primary' onClick={() => {
                             setVisible(false)
                             setStep(0)
+                            setWhatsappMessageSent(false);
                         }}>Close</Button>
                     </div>}
             </Drawer>
