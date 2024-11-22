@@ -148,7 +148,8 @@ const Home: React.FC = () => {
         <div className='flex flex-col gap-2'>
             <div className='flex flex-col gap-2'>
                 <h1 className='text-lg font-semibold'>Incoming Requests
-                    {incomingRequests.length > 0 && <span className=''>{" "}({(incomingRequests.length)}</span>})</h1>
+                    {incomingRequests.length > 0 && <> <span className=''>{" ("}{incomingRequests.length}</span>{")"}</>}
+                </h1>
 
                 {incomingRequests.length > 0 ? (
                     incomingRequests.map((request, index) => (

@@ -192,7 +192,7 @@ const AddTransaction: React.FC = () => {
     return (
         <div>
             <div className='fixed z-[1000] bottom-8 left-1/2 transform -translate-x-1/2'>
-                <Button className='z-[1000]' onClick={showDrawer} type='primary' icon={<PlusOutlined />} />
+                <Button className='z-[1000]' onClick={showDrawer} type='primary' icon={<PlusOutlined />}>Add Bill</Button>
             </div>
             <Drawer
                 title="Add Transaction"
