@@ -88,11 +88,27 @@ const Home: React.FC = () => {
         });
     }
 
-
     useEffect(() => {
         const unsubscribe = fetchLimit();
         return () => unsubscribe(); // Cleanup the listener on component unmount
     }, []);
+
+    // we need the 15th of every month if the current date is less than 15th, we need the 28th of every month if the current date is greater than 15th
+    // we need the date in the format 28th november 2021
+
+    const dateToBill = () => {
+        const date = new Date();
+        const day = date.getDate();
+        const month = date.toLocaleString('default', { month: 'long' });
+        const year = date.getFullYear();
+        if (day < 15) {
+            return `15th ${month} ${year}`;
+        } else {
+            return `28th ${month} ${year}`;
+        }
+    }
+
+
 
     const fetchLimit = () => {
         const user = auth.currentUser;
@@ -134,7 +150,7 @@ const Home: React.FC = () => {
                             }}
                             type='primary'>Pay Now</Button>
                     </div>
-                    <Alert className='mt-4' message="Bill will be generated on 5th Nov, 2024" type="warning" />
+                    <Alert className='mt-4' message={`Bill will be generated on ${dateToBill()}`} type="warning" />
                 </Card>}
                 <IncomingRequests />
                 <RecentCashbacks />
