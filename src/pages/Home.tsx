@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Button, Card, Divider } from 'antd';
+import { Alert, Button, Card, Divider, message } from 'antd';
 import IncomingRequests from '../components/IncomingRequests';
 import RecentCashbacks from '../components/RecentCashbacks';
 import AddTransaction from '../components/AddTransaction';
@@ -18,6 +18,7 @@ type Limit = {
 const Home: React.FC = () => {
 
     const [limit, setLimit] = useState<Limit | null>(null);
+    const [isNotificationTurnedOn, setIsNotificationTurnedOn] = useState(false);
     // get the doc from limit collection where userId is equal to current user id
 
     useEffect(() => {
@@ -31,10 +32,10 @@ const Home: React.FC = () => {
             Notification?.requestPermission().then((permission) => {
                 if (permission === 'granted') {
                     console.log('Notification permission granted.');
-
                     resetUI();
                 } else {
                     console.log('Unable to get permission to notify.');
+                    message.error('Unable to get permission to notify.');
                 }
             });
         } catch (err) {
@@ -42,19 +43,25 @@ const Home: React.FC = () => {
         }
     }
 
-    function resetUI() {
+   async function resetUI() {
         const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY
         // clearMessages();
         // showToken('loading...');
         // Get registration token. Initially this makes a network call, once retrieved
         // subsequent calls to getToken will return from cache.
-        getToken(messaging, { vapidKey }).then((currentToken) => {
+        // const swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        getToken(messaging, { 
+            // serviceWorkerRegistration: swRegistration ,
+            vapidKey }).then((currentToken) => {
+            console.log('Token:', currentToken);
             if (currentToken) {
                 console.log('currentToken:', currentToken);
+                setIsNotificationTurnedOn(true);
                 // sendTokenToServer(currentToken);
                 // updateUIForPushEnabled(currentToken);
                 // update the user doc in the users collection with the token 
                 const user = auth.currentUser;
+                console.log('User:', user);
                 if (user) {
                     // updateDoc(doc(db, 'users', user.uid), {
                     //     fcmToken: currentToken
@@ -78,6 +85,7 @@ const Home: React.FC = () => {
             }
         }).catch((err) => {
             console.log('An error occurred while retrieving token. ', err);
+            message.error('An error occurred while retrieving token.');
             // showToken('Error retrieving registration token.');
             // setTokenSentToServer(false);
         });
@@ -131,7 +139,7 @@ const Home: React.FC = () => {
 
     return (
         <>
-            <Header />
+            <Header isNotificationTurnedOn={isNotificationTurnedOn} />
             <div className='p-4 flex flex-col gap-4 overflow-hidden'>
                 {limit && <Card className='flex flex-col shadow-md '>
                     <div className='flex flex-col'>

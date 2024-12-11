@@ -7,7 +7,11 @@ import { useAuth } from '../contexts/AuthContext'
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+    isNotificationTurnedOn: boolean;
+}
+
+const Header: React.FC<HeaderProps> = ({isNotificationTurnedOn}) => {
     const [visible, setVisible] = useState(false);
     const [upiId, setUpiId] = useState('');
     const [notificationVisible, setNotificationVisible] = useState(false);
@@ -98,7 +102,10 @@ const Header: React.FC = () => {
                         src={profilepic} className='rounded-full h-10 w-10' />
                     <p className='ml-2'>{currentUser?.displayName}</p>
                 </div>
-                <div className='flex gap-2'>
+                <div className='flex gap-2 items-center'>
+                    <div>
+                      Notifications:  {isNotificationTurnedOn ? "on" : "off"}
+                    </div>
                     <InfoCircleOutlined
                         onClick={() => setIsInfoModalOpen(true)}
                         className='text-2xl'
