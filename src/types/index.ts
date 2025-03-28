@@ -14,4 +14,8 @@ export interface User {
     phoneNumber: string;
 }
 
+export interface Transaction {
+    
+}
+
 export type CashbackStatus = 'pending' | 'success' | 'error';

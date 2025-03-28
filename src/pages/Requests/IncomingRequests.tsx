@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Avatar, Button, Card, Divider, Empty, message } from 'antd';
+import { message } from 'antd';
 import { collection, query, where } from 'firebase/firestore';
 import { auth, db } from '../../firebase';
 import { runTransaction, onSnapshot } from 'firebase/firestore';
 import { getDoc, doc } from 'firebase/firestore';
-import { FormattedTime } from '../../utils/helpers';
 import NoData from '../../components/common/NoData';
+import IncomingRequestCard from '../../components/IncomingRequestCard'
+import useIncomingRequests from '../../hooks/useIncomingRequests';
 
 interface Transaction {
     id: string;
@@ -24,8 +25,9 @@ interface Transaction {
 }
 
 const Home: React.FC = () => {
-    const [incomingRequests, setIncomingRequests] = useState<Transaction[]>([]);
+    // const [incomingRequests, setIncomingRequests] = useState<Transaction[]>([]);
     const [loadingTransactionId, setLoadingTransactionId] = useState<string | null>(null); // For tracking loading status
+    const {incomingRequests} = useIncomingRequests()
 
     useEffect(() => {
         const unsubscribeIncoming = fetchIncomingRequests();
@@ -66,7 +68,7 @@ const Home: React.FC = () => {
                 );
 
                 requests.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
-                setIncomingRequests(requests as Transaction[]);
+                // setIncomingRequests(requests as Transaction[]);
             });
         }
 
@@ -143,14 +145,6 @@ const Home: React.FC = () => {
         }
     };
 
-    const getInitials = (name:string) => {
-        return   name
-        .split(' ')
-        .map(word => word[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2);
-    }
 
     return (
         <div className='gap-2 p-4'>
@@ -160,51 +154,12 @@ const Home: React.FC = () => {
                 <div className='flex flex-col gap-3'>
                     {incomingRequests.length > 0 ? (
                         incomingRequests.map((request, index) => (
-                            <Card key={index} className='flex shadow-sm'
-                                styles={{
-                                    body: {
-                                        padding: "18px",
-                                        display: "flex",
-                                        width: "100%",
-                                        gap: "8px",
-                                        justifyContent: "space-between",
-                                        
-                                    }
-                                }}
-                            >
-                                <div className=''>
-                                    <Avatar size={50} >{getInitials(request.hostName)}</Avatar>
-                                </div>
-                                <div className='flex flex-col w-full'>
-                                    <div className='flex justify-between'>
-                                        <p className='text-lg font-semibold m-0'>{request.hostName}</p>
-                                    </div>
-                                    <div className='flex justify-between '>
-                                        <p className='opacity-0.8'>{request.description}</p>
-                                        <p className='font-semibold text-xl'>₹{request.amount}</p>
-                                    </div>
-                                    <p className='text-gray-500 text-[14px]'>{FormattedTime(request.createdAt)}</p>
-                                    <div className='h-[1px] w-full bg-gray-100 mt-2'></div>
-                                    <div className='flex items-center w-full mt-6 justify-end' >
-                                        <div className='flex justify-between  gap-3  self-end'>
-                                            <Button
-                                                type='text'
-                                                onClick={() => handleDecline(request.id)}
-                                                className='w-1/2'>Decline</Button>
-                                            <Button
-                                                onClick={() => handleAccept(request.id)}
-                                                className='w-1/2'
-                                                type='primary'
-                                                loading={loadingTransactionId === request.id} // Show loading spinner only for the button of the request being accepted
-                                            >
-                                                Accept
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </Card>
-
-                        ))
+                          <IncomingRequestCard 
+                          request={request}
+                          loadingTransactionId={false}
+                          handleAccept={handleAccept}
+                          handleDecline={handleDecline} />
+                        )) 
                     ) : (
                         <NoData description="No pending requests" />
                     )}

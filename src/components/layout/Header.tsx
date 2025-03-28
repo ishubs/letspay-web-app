@@ -61,10 +61,10 @@ const Header: React.FC<HeaderProps> = ({ isNotificationTurnedOn }) => {
                         onClick={() => setIsInfoModalOpen(true)}
                         className='text-2xl cursor-pointer hover:text-blue-500 transition-colors duration-200'
                     />
-                    <BellOutlined
+                    {/* <BellOutlined
                         onClick={() => setNotificationVisible(true)}
                         className='text-2xl cursor-pointer hover:text-blue-500 transition-colors duration-200'
-                    />
+                    /> */}
                 </div>
             </div>
             <UserDrawer visible={visible} onClose={() => setVisible(false)} upiId={upiId} onLogout={logout} />

@@ -22,7 +22,7 @@ const HowToUse: React.FC = () => {
     ];
 
     return (
-        <Card className="bg-gradient-to-br from-white to-blue-50 shadow-lg">
+        <Card className="bg-gradient-to-br from-white to-blue-50 shadow-lg" styles={{body: {padding : "12px"}}}>
             <div className="text-center mb-4 md:mb-6">
                 <h2 className="text-xl md:text-2xl font-bold text-gray-800">How Letspay Works</h2>
                 <p className="text-sm md:text-base text-gray-600 mt-1 md:mt-2">Simple, fast, and hassle-free bill splitting</p>
@@ -41,16 +41,7 @@ const HowToUse: React.FC = () => {
                             <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-1 md:mb-2">{step.title}</h3>
                             <p className="text-sm md:text-base text-gray-600">{step.description}</p>
                         </div>
-                        {index < steps.length - 1 && (
-                            <>
-                                {/* Mobile line */}
-                                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0.5 h-4 bg-gray-300 md:hidden"></div>
-                                {/* Desktop line */}
-                                <div className="hidden md:block absolute top-1/2 right-20 transform -translate-y-1/2">
-                                    <div className="w-8 h-0.5 bg-gray-300"></div>
-                                </div>
-                            </>
-                        )}
+                       
                     </div>
                 ))}
             </div>

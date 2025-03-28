@@ -1,95 +1,101 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, List, Card, Tag, Alert } from 'antd';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { List, Card, Badge, Typography, Tag, Spin, Alert, Button } from 'antd';
+import { collection, query, getDocs } from 'firebase/firestore';
 import { auth, db } from '../../firebase';
+import NoData from '../../components/common/NoData';
 import { FormattedTime } from '../../utils/helpers';
 
 const { Text } = Typography;
 
-interface Transaction {
-    id: string;
-    createdAt: {
-        seconds: number;
-        nanoseconds: number;
-    };
-    amount: number;
-    hostId: string;
-    userId: string;
-    transactionId: string;
-    status: "pending" | "accepted" | "rejected" | "auto_rejected";
-    participantName: string;
-    hostName: string;
-    description: string;
-}
-
-const statusColors = {
-    pending: 'orange',
-    accepted: 'green',
-    rejected: 'red',
-    auto_rejected: 'red'
-};
-
-const statusText = {
-    pending: 'Pending',
-    accepted: 'Accepted',
-    rejected: 'Rejected',
-    auto_rejected: 'Auto Rejected'
-};
-
-const OutgoingRequests: React.FC = () => {
-    const [transactions, setTransactions] = useState<Transaction[]>([]);
+const NotificationScreen: React.FC = () => {
+    const [alerts, setAlerts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        getOutgoingRequests();
+        const fetchAlerts = async () => {
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    setError('Please log in to view notifications');
+                    setLoading(false);
+                    return;
+                }
+                const notificationsRef = collection(db, 'alerts', user.uid, 'notifications');
+                const querySnapshot = await getDocs(query(notificationsRef));
+
+                const notificationsData = querySnapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data(),
+                }));
+
+                notificationsData.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
+                setAlerts(notificationsData);
+            } catch (err) {
+                setError('Failed to load notifications');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAlerts();
     }, []);
 
-    const getOutgoingRequests = async () => {
-        const user = auth.currentUser;
-        if (user) {
-            const transactionsRef = collection(db, 'transactions');
-            const q = query(transactionsRef, where('hostId', '==', user.uid));
-            const querySnapshot = await getDocs(q);
-            const transactions = querySnapshot.docs.map(doc => ({
-                ...doc.data(),
-                id: doc.id
-            })) as Transaction[];
-            
-            // Sort by creation date, newest first
-            transactions.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
-            setTransactions(transactions);
-        }
-    };
+    if (loading) {
+        return <Spin className="flex justify-center items-center h-screen" />;
+    }
+
+    if (error) {
+        return <Alert message={error} type="error" showIcon />;
+    }
 
     return (
-        <div className='flex flex-col gap-2 p-4'>
-            <h1 className='text-lg font-semibold'>Outgoing Requests
-                {transactions.length > 0 && <> <span>{" ("}{transactions.length}</span>{")"}</>}
-            </h1>
+        <div className="min-h-screen bg-gray-100">
+            <div className="sticky top-0 bg-white p-4 border-b z-10 flex justify-between">
+                <Text strong>Notifications</Text>
+                <Button type="link" size="small">Mark all as read</Button>
+            </div>
 
-            {transactions.length > 0 ? (
-                transactions.map((transaction, index) => (
-                    <Card key={index} className='flex flex-col shadow-md'>
-                        <div className='flex justify-between'>
-                            <Text>{transaction.participantName}</Text>
-                            <Tag color={statusColors[transaction.status]}>
-                                {statusText[transaction.status]}
-                            </Tag>
-                        </div>
-                        <div className='flex justify-between mt-2'>
-                            <Text>{transaction.description}</Text>
-                            <Text strong>₹{transaction.amount}</Text>
-                        </div>
-                        <div className='flex justify-between mt-2 text-gray-500 text-sm'>
-                            <Text>Request to</Text>
-                            <Text>{FormattedTime(transaction.createdAt)}</Text>
-                        </div>
-                    </Card>
-                ))
+            {alerts.length > 0 ? (
+                <List
+                    dataSource={alerts}
+                    renderItem={(alert) => (
+                        <List.Item className={`px-2 py-1 ${alert.read ? 'opacity-70' : 'bg-white'}`}>
+                            <Card
+                                className="w-full border-none rounded-lg shadow-sm"
+                                bodyStyle={{ padding: '12px' }}
+                            >
+                                <div className="flex items-start gap-3">
+                                    <Badge dot={!alert.read} color="blue">
+                                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                            <Text strong>{alert.fromUser[0]}</Text>
+                                        </div>
+                                    </Badge>
+                                    <div className="flex-1">
+                                        <div className='flex justify-between items-center'>
+                                            <div>
+                                                <Text strong className="block text-lg">{alert.fromUser}</Text>
+                                                <Text className="">{alert.title}</Text>
+                                            </div>
+                                            <div className='text-xl font-semibold'>
+                                            ₹{alert.amount}
+                                            </div>
+                                        </div>
+                                        {/* <Text type="secondary" className="text-sm">{alert.body}</Text> */}
+                                        <div className="flex justify-between items-center mt-2">
+                                            <Text type="secondary" className="text-xs">{FormattedTime(alert.timestamp)}</Text>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Card>
+                        </List.Item>
+                    )}
+                />
             ) : (
-                <Alert message="No outgoing requests" type="info" />
+                <NoData description="No notifications yet" />
             )}
         </div>
     );
 };
 
-export default OutgoingRequests; 
+export default NotificationScreen;

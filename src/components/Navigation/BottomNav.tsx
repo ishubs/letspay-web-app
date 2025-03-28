@@ -44,9 +44,9 @@ const BottomNav: React.FC = () => {
 
                     <button 
                         onClick={showModal} 
-                        className="flex flex-col items-center justify-center w-1/5 relative -top-4"
+                        className="flex flex-col items-center justify-cente relative -top-4"
                     >
-                        <div className="bg-blue-500 p-3 rounded-full shadow-lg">
+                        <div className="bg-blue-500 p-3 h-[50px] w-[52px]  rounded-full shadow-lg">
                             <PlusOutlined className="text-2xl text-white" />
                         </div>
                         <span className="text-xs mt-1 text-gray-600">Add Bill</span>

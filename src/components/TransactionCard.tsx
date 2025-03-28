@@ -40,7 +40,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({ transaction, onClick 
                     <span className='text-sm text-gray-500'>{FormattedTime(transaction.createdAt)}</span>
                 </div>
             </div>
-            <div className='text-lg flex items-center'>₹{transaction.totalAmount}</div>
+            <div className='text-lg flex items-center'>₹{transaction.amount}</div>
         </div>
     );
 };

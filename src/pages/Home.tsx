@@ -13,6 +13,7 @@ import { getToken, onMessage } from 'firebase/messaging'
 import AddUPIIDModal from '../components/modals/AddUPIIDModal';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { WalletOutlined, CreditCardOutlined } from '@ant-design/icons';
+import useIncomingRequests from '../hooks/useIncomingRequests';
 
 type Limit = {
     availableLimit: number;
@@ -23,8 +24,7 @@ const Home: React.FC = () => {
 
     const [limit, setLimit] = useState<Limit | null>(null);
     const [isNotificationTurnedOn, setIsNotificationTurnedOn] = useState(false);
-    const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
-    const [currentUser, setCurrentUser] = useState(auth.currentUser);
+    const {incomingRequestsCount: pendingRequestsCount} = useIncomingRequests()
 
     useEffect(() => {
         requestPermission()
@@ -107,27 +107,7 @@ const Home: React.FC = () => {
         return () => unsubscribe(); // Cleanup the listener on component unmount
     }, []);
 
-    useEffect(() => {
-        const fetchPendingRequests = async () => {
-            if (!currentUser) return;
-
-            try {
-                const transactionsRef = collection(db, 'transactions');
-                const q = query(
-                    transactionsRef,
-                    where('participants', 'array-contains', currentUser.uid),
-                    where('status', '==', 'pending')
-                );
-
-                const querySnapshot = await getDocs(q);
-                setPendingRequestsCount(querySnapshot.size);
-            } catch (error) {
-                console.error('Error fetching pending requests:', error);
-            }
-        };
-
-        fetchPendingRequests();
-    }, [currentUser]);
+  
 
     // we need the 15th of every month if the current date is less than 15th, we need the 28th of every month if the current date is greater than 15th
     // we need the date in the format 28th november 2021
@@ -168,8 +148,8 @@ const Home: React.FC = () => {
     return (
         <>
             <Header isNotificationTurnedOn={isNotificationTurnedOn} />
-            <div className='p-4 flex flex-col gap-4 overflow-hidden'>
-                {limit && <Card className='flex flex-col bg-gradient-to-br from-white to-blue-50 shadow-lg'>
+            <div className='p-4 flex flex-col gap-6 overflow-hidden'>
+                {limit && <Card className='flex flex-col bg-gradient-to-br from-white to-blue-50'>
                     <div className='flex flex-col'>
                         <div className="flex items-center gap-2 mb-2">
                             <WalletOutlined className="text-blue-500 text-xl" />

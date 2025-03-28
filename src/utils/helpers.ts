@@ -7,7 +7,6 @@ export function FormattedDate(timestamp : Timestamp ) {
     return formattedDate
 }
 
-// write a function to format timestamp like 1 jan, 1:30 PM
 
 export const FormattedTime = (timestamp: { seconds: number; nanoseconds: number }) => {
     const date = new Date(timestamp.seconds * 1000);

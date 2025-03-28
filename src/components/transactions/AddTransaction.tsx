@@ -1,322 +1,62 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Checkbox, Drawer, Card, message } from 'antd';
+import React, { useState, useEffect } from 'react';
 import { InputNumber, Input } from 'antd';
-import { collection, getDocs, runTransaction } from 'firebase/firestore';
-import { db, auth } from '../../firebase';
-import { doc } from 'firebase/firestore';
-import { serverTimestamp } from 'firebase/firestore';
-import { User } from '../../types';
-import UserInitialsCheckbox from '../common/UserInitialsCheckbox';
-import NoData from '../common/NoData';
+import { IndianRupee } from 'lucide-react';
 
-interface AddTransactionProps {
-    visible: boolean;
-    onClose: () => void;
+interface AmountInputProps {
+    totalAmount: number | null;
+    description: string;
+    onAmountChange: (value: number | null) => void;
+    onDescriptionChange: (value: string) => void;
 }
 
-const AddTransaction: React.FC<AddTransactionProps> = ({ visible, onClose }) => {
-    const [users, setUsers] = useState<User[]>([]);
-    const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-    const [totalAmount, setTotalAmount] = useState<number | null>(null);
-    const [description, setDescription] = useState<string>("");
-    const [loading, setLoading] = useState(false);
-    const [isFormValid, setIsFormValid] = useState(false); // New state to track form validity
-    const [step, setStep] = useState(0);
-    const [transactionId, setTransactionId] = useState<string | null>(null);
-    const amountInputRef = React.createRef<HTMLInputElement>();
-    const [whatsappMessageSent, setWhatsappMessageSent] = useState(false);
-    const [url, setUrl] = useState<string | null>(null);
-    // Validate the form whenever the inputs change
+const AmountInput: React.FC<AmountInputProps> = ({
+    totalAmount,
+    description,
+    onAmountChange,
+    onDescriptionChange
+}) => {
+    const [inputWidth, setInputWidth] = useState(50);
+    
     useEffect(() => {
-        if (description && totalAmount && selectedUsers.length > 0) {
-            setIsFormValid(true);
-        } else {
-            setIsFormValid(false);
-        }
-    }, [description, totalAmount, selectedUsers]);
-
-    useEffect(() => {
-        if (visible && amountInputRef.current) {
-            setTimeout(() => {
-                amountInputRef.current?.focus();
-                amountInputRef.current?.click();
-            }, 500);
-        }
-    }, [visible]);
-
-    useEffect(() => {
-        fetchUsers();
-    }, []);
-
-    const fetchUsers = async () => {
-        const querySnapshot = await getDocs(collection(db, "users"));
-        const users = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        // remove the current user from the list
-        const currentUser = auth.currentUser;
-        const filteredUsers = users.filter(user => user.id !== currentUser?.uid);
-        setUsers(filteredUsers as User[]);
-    };
-
-    const handleUserSelect = (userId: string) => {
-        setSelectedUsers(prevSelectedUsers => {
-            if (prevSelectedUsers.includes(userId)) {
-                return prevSelectedUsers.filter(id => id !== userId);
-            } else {
-                return [...prevSelectedUsers, userId];
-            }
-        });
-    };
-
-    const handleProceed = async () => {
-        setLoading(true);
-        try {
-            const host = auth.currentUser
-            const hostId = auth.currentUser?.uid;
-            if (!hostId || !host) {
-                throw new Error('Host ID not found');
-            }
-
-            const transactionId = await createTransaction(hostId, selectedUsers, totalAmount || 0);
-            setTransactionId(transactionId);
-            const message = `Cashback ₹${totalAmount} to ${auth.currentUser?.displayName} for ${description} with transaction id:${transactionId}, on ${host.phoneNumber}`;
-
-            // const url = `https://wa.me/${host.phoneNumber}?text=${encodeURIComponent(message)}`;
-
-            // window.open(url, '_blank');
-            // const message = `Cashback ₹${totalAmount || 0} to ${displayName} for ${description} with transaction ID: ${transactionId}, on ${host.phoneNumber}`;
-
-            const url = `https://wa.me/+919346009605?text=${encodeURIComponent(message)}`;
-            setUrl(url);
-            // Create a temporary link element
-            const link = document.createElement('a');
-            link.href = url;
-            link.target = '_blank'; // Open in new tab
-
-            // Append to the body
-            document.body.appendChild(link);
-
-            // Programmatically click the link
-            link.click();
-
-            // Remove the link from the document
-            document.body.removeChild(link);
-            setTotalAmount(null);
-
-            setDescription("");
-            setSelectedUsers([]);
-            // send a message to +91 9346009605 on whatsapp with the transaction details
-
-
-
-        } catch (error) {
-            console.error("Error adding transaction: ", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    async function createTransaction(hostId: string, participants: string[], totalAmount: number): Promise<string | null> {
-        const transactionRef = doc(collection(db, 'transactions'));
-
-        try {
-            await runTransaction(db, async (transaction) => {
-                const limitRef = doc(db, 'limits', hostId);
-                const limitDoc = await transaction.get(limitRef); // Perform the read first
-
-                if (!limitDoc.exists()) {
-                    throw new Error(`Limit document for user ${hostId} does not exist.`);
-                }
-
-                const currentLimit = limitDoc.data().availableLimit;
-                // Check if the host has enough limit to create the transaction
-                if (currentLimit < totalAmount) {
-                    message.error(`Insufficient limit, available limit: ${currentLimit}`);
-                    throw new Error(`Insufficient limit, available limit: ${currentLimit}`);
-                }
-
-                const perPersonAmount = totalAmount / (participants.length + 1);
-                const updatedLimit = currentLimit - perPersonAmount;
-
-                if (updatedLimit < 0) {
-                    throw new Error(`Insufficient limit for user ${hostId}`);
-                }
-
-                // Set the transaction data
-                transaction.set(transactionRef, {
-                    hostId: hostId,
-                    description,  // Assuming description is available in scope
-                    participants,
-                    totalAmount,
-                    perPersonAmount,
-                    status: 'pending', // Initially all are pending
-                    createdAt: serverTimestamp(),
-                    cashbackStatus: 'pending'
-                });
-
-                // Create request entries for each participant
-                participants.forEach(participantId => {
-                    const requestRef = doc(collection(db, 'requests'));
-                    transaction.set(requestRef, {
-                        userId: participantId,
-                        transactionId: transactionRef.id,
-                        amount: perPersonAmount,
-                        description,
-                        status: 'pending',
-                        hostId: hostId,
-                        createdAt: serverTimestamp()
-                    });
-                });
-
-                // Update the host's available limit
-                transaction.update(limitRef, {
-                    availableLimit: updatedLimit
-                });
-                setStep(1);
-
-                console.log("Transaction, requests, and host limit update created successfully!");
-            });
-
-            // Return the ID of the created transaction document
-            return transactionRef.id;
-
-        } catch (error) {
-            console.error("Transaction failed: ", error);
-            return null;  // In case of error, return null
-        }
-    }
-
-    const handleClose = () => {
-        // Reset all states
-        setTotalAmount(null);
-        setDescription("");
-        setSelectedUsers([]);
-        setStep(0);
-        setWhatsappMessageSent(false);
-        onClose();
-    };
-
+        // Dynamically set width based on the number of digits
+        const length = totalAmount?.toString().length || 1;
+        // Adjust the multiplier for the width to make the input more responsive
+        setInputWidth(Math.max(50, length * 18)); // You can tweak the multiplier for a better fit
+    }, [totalAmount]);
+    
     return (
-        <div>
-            <Drawer
-                title="Add Transaction"
-                placement="bottom"
-                height={"100%"}
-                closable={true}
-                onClose={handleClose}
-                open={visible}
-                styles={{
-                    content: {
-                        // height: '100vh',
-                        display: 'flex',
-                        flexDirection: 'column',
-                    },
-                    body: {
-                        display: 'flex',
-                        flexDirection: 'column',
-                        flex: 1,
-                        padding: '8px',
-                    }
-                }}
-            >
-                {step === 0 ? <>
-                    <div className='flex flex-col justify-center items-center'>
-                        <p className='text-base mb-2'>Total amount</p>
-                        <InputNumber
-                            autoFocus
-                            className='outline-none border-none'
-                            prefix="₹"
-                            type="number" pattern="[0-9]*"
-                            ref={amountInputRef}
-                            value={totalAmount}
-                            id="amount-input"
-                            style={{
-                                fontSize: '2rem',
-                                // borderBottom: '1px solid #000',
-                                borderRadius: 0,
-                                border: 0,
-                                // height: 100
-                            }}
-                            onChange={(value) => setTotalAmount(value as number)}
-                        />
-                        <Input
-                            className='mt-4 text-center'
-                            placeholder="What's this for?"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                        />
-                        <h1 className='mt-4 text-left self-start'>Split with</h1>
-                    </div>
-                    <div className='mt-4 flex flex-1 flex-col overflow-auto'>
-                        {users.length === 0 && (
-                            <NoData description="No contacts found to split with" />
-                        )}
-                        {users && (
-                            <div className=' flex flex-col gap-2'>
-                                {users.map((contact) => (
-                                    <Card 
-                                        className='flex justify-between items-center cursor-pointer' 
-                                        key={contact.id}
-                                        onClick={() => handleUserSelect(contact.id)}
-                                    >
-                                        <div className='flex items-center gap-4 w-full'>
-                                            <UserInitialsCheckbox
-                                                name={`${contact.firstName} ${contact.lastName}`}
-                                                selected={selectedUsers.includes(contact.id)}
-                                                onClick={(e) => {
-                                                    e.stopPropagation(); // Prevent double triggering
-                                                    handleUserSelect(contact.id);
-                                                }}
-                                            />
-                                            <div className='flex flex-col'>
-                                                <div className='font-medium'>
-                                                    {contact.firstName} {contact.lastName}
-                                                </div>
-                                                <div className='text-gray-500 text-sm'>
-                                                    {contact.phoneNumber}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </Card>
-                                ))}
-                            </div>
-                        )}
-
-                    </div>
-                    <Button
-                        loading={loading}
-                        type='primary'
-                        className='w-full my-8 '
-                        onClick={handleProceed}
-                        disabled={!isFormValid} // Disable button if form is invalid
-                    >
-                        Proceed
-                    </Button>
-                </> :
-                    <div className='flex flex-col justify-center text-center'>
-                        <img className='h-[80px] mx-auto' src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQWN-SLzk5eeEuA9zBJKzsM0qbvtLsKDfJ-w&s" />
-                        <p className='text-center text-xl'>Transaction Successful</p>
-                        <p className='mt-2'>
-                            <span className='text-gray-500'>Transaction id: </span>
-                            {transactionId}</p>
-
-                        {url && <div className='my-4'> <Button
-                            onClick={() => {
-                                window.open(url || '', '_blank')
-                            }}
-                            className='m-0 p-0' type='link'>Click here</Button> if you have not completed the whatsapp message step</div>}
-
-                        <div>
-                            <Checkbox checked={whatsappMessageSent} onChange={() => {
-                                setWhatsappMessageSent(!whatsappMessageSent)
-                            }} className='mt-4'>I have completed the whatsapp message step</Checkbox>
-                        </div>
-                        <Button disabled={!whatsappMessageSent} className='mt-6' type='primary' onClick={() => {
-                            handleClose();
-                        }}>Close</Button>
-                    </div>}
-            </Drawer>
+        <div className='flex flex-col justify-center items-center px-4 py-6'>
+            <p className='text-sm text-gray-500 mb-2'>Enter Amount</p>
+            <div className='relative flex items-center justify-center w-full'>
+                <span className='text-3xl text-gray-500'>₹</span>
+                <InputNumber
+                    autoFocus
+                    className='text-center text-5xl font-semibold tracking-wide outline-none border-none bg-transparent'
+                    type='number'
+                    pattern='[0-9]*'
+                    value={totalAmount}
+                    controls={false}
+                    placeholder='0'
+                    style={{
+                        border: 'none',
+                        outline: 'none',
+                        width: `${inputWidth}px`,
+                        minWidth: '50px',  // Ensure minimum width
+                        maxWidth: '200px', // Add a max width to prevent it from becoming too large
+                        textAlign: 'center'
+                    }}
+                    onChange={onAmountChange}
+                />
+            </div>
+            <Input
+                className='mt-6 text-center text-lg py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                placeholder="What's this for?"
+                value={description}
+                onChange={(e) => onDescriptionChange(e.target.value)}
+            />
+            <h1 className='mt-6 text-left self-start font-medium text-gray-700'>Split with</h1>
         </div>
     );
 };
 
-export default AddTransaction;
+export default AmountInput;

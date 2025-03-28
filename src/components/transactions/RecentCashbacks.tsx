@@ -98,8 +98,6 @@ const Home: React.FC = () => {
         return () => { }; // Return an empty function if user is not logged in
     };
 
-
-
     const handleNavigateTxDetail = (request: OutgoingTransaction) => {
         // Navigate to the transaction details page
         navigate(`/tx/${request.transactionId}`, { state: { request } });
