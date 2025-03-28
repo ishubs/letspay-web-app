@@ -1,3 +1,37 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+    font-size: 16px;
+  }
+
+  body {
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  
+  /* Override Ant Design's base font size */
+  .ant-typography,
+  .ant-input,
+  .ant-btn,
+  .ant-select,
+  .ant-form,
+  .ant-form-item-label > label,
+  .ant-form-item,
+  .ant-drawer-title,
+  .ant-modal-title,
+  .ant-card,
+  .ant-alert,
+  .ant-message {
+    font-size: 16px !important;
+  }
+  
+  /* Adjust size for smaller text elements */
+  .text-sm {
+    font-size: 14px !important;
+  }
+  
+  .text-xs {
+    font-size: 12px !important;
+  }

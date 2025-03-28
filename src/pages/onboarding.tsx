@@ -81,9 +81,32 @@ const Onboarding: React.FC = () => {
                 <Form.Item
                     label="UPI ID"
                     name="upiId"
-                    rules={[{ required: true, message: 'Please input your UPI Id!' }]}
+                    rules={[
+                        { required: true, message: 'Please input your UPI Id!' },
+                        {
+                            pattern: /^[a-zA-Z0-9]+@[a-zA-Z0-9]+$/,
+                            message: 'UPI ID must be in format: username@provider'
+                        },
+                        {
+                            validator: (_, value) => {
+                                if (!value) return Promise.resolve();
+                                if (value.includes('@')) {
+                                    const username = value.split('@')[0];
+                                    if (username.length >= 3) {  // Minimum 3 characters before @
+                                        return Promise.resolve();
+                                    }
+                                }
+                                return Promise.reject('Please enter a valid UPI ID (e.g., shubsgiri@ybl or username@paytm)');
+                            }
+                        }
+                    ]}
                 >
-                    <Input
+                    <Input 
+                        placeholder="Enter UPI ID (e.g., username@ybl)"
+                        onChange={(e) => {
+                            const value = e.target.value.replace(/[^a-zA-Z0-9@]/g, '');
+                            e.target.value = value;
+                        }}
                     />
                 </Form.Item>
                 <Form.Item>

@@ -1,3 +1,24 @@
 body {
     max-height: 100vh;
 }
+
+.firebase-emulator-warning {
+    display: none;
+}
+
+#otp {
+    width: 100% !important;
+    justify-content: space-between;
+}
+
+#amount-input {
+    font-size: 36px;
+}
+
+@media only screen  and (hover: none) {
+    body:focus-within,
+    body:focus-within .an-absolutely-positioned-input-ancestor {
+        max-height: 53vh;
+        overflow: auto;
+    }
+}

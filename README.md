@@ -9,3 +9,7 @@ tech description: requests that the current user is a participant in and are pen
 
 
 
+issues to fix:
+1. OTP screen
+2. Display name not showing up on first load
+3. Fix phone number validation

@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, message } from 'antd';
+import { Form, Input, Button, message, Typography } from 'antd';
 import { PhoneOutlined } from '@ant-design/icons';
 import { useAuth } from '../../contexts/AuthContext';
 import VerifyOTP from './VerifyOTP';
 import { ConfirmationResult } from 'firebase/auth';
+import logopng from './../../assets/logo.png';
+
+const { Title, Text } = Typography;
 
 const LoginPage: React.FC = () => {
-    const { signInWithPhone, setupRecaptcha, currentUser } = useAuth();
+    const { signInWithPhone, setupRecaptcha } = useAuth();
     const [phoneNumber, setPhoneNumber] = useState('');
     const [verificationId, setVerificationId] = useState<ConfirmationResult | undefined>();
     const [step, setStep] = useState(1);
@@ -27,43 +30,69 @@ const LoginPage: React.FC = () => {
         }
     };
 
-    console.log('currentUser:', currentUser);
-
-
-
     return (
-        <div className='w-[100vw] p-4 h-full flex flex-col justify-center'>
+        <div className="h-screen w-full flex flex-col justify-center p-6 bg-[#FAFAFA]">
             {step === 1 ? (
-                <>
-                    <h1 className='text-2xl font-bold mb-12 mt-8'>Login to Letspay</h1>
-                    <h2 className='text-xl my-8 font-semibold'>Enter Mobile Number</h2>
-                    <Form name="login" initialValues={{ remember: true }} onFinish={handlePhoneSignIn}>
+                <div>
+                    <div className="flex justify-center mb-8">
+                        <img src={logopng} alt="LetsPay Logo" className="w-28 h-auto" />
+                    </div>
+
+                    <Title level={2} className="text-center mb-2">Welcome to LetsPay</Title>
+                    <Text className="block text-center text-gray-600 mb-8">
+                        Split bills instantly. Get paid back in real-time.
+                    </Text>
+
+                    <Form layout="vertical" onFinish={handlePhoneSignIn}>
                         <Form.Item
+                            label="Enter your mobile number"
                             name="phone"
                             rules={[
                                 { required: true, message: 'Please input your phone number!' },
-                                { pattern: /^\d{10}$/, message: 'Please enter a valid 10-digit phone number!' }
+                                { pattern: /^\d{10}$/, message: 'Enter a valid 10-digit phone number!' }
                             ]}
                         >
                             <Input
-                                type="number" pattern="[0-9]*"
-                                className='w-full h-[60px] border-l-0 border-r-0 border-t-0 border-b-1 rounded-none'
+                                type="tel"
+                                pattern="[0-9]*"
+                                maxLength={10}
+                                className="h-[56px] text-lg rounded-lg"
+                                size="large"
                                 prefix={<PhoneOutlined />}
                                 placeholder="Mobile Number"
-                                onChange={(e) => setPhoneNumber(e.target.value)}
+                                value={phoneNumber}
+                                onChange={(e) => {
+                                    const value = e.target.value.replace(/\D/g, '');
+                                    if (value.length <= 10) setPhoneNumber(value);
+                                }}
                             />
                         </Form.Item>
+
                         <Form.Item>
-                            <Button className='h-[60px] text-xl' loading={loading} type="primary" htmlType="submit" block>
-                                Proceed
+                            <Button
+                                type="primary"
+                                htmlType="submit"
+                                block
+                                className="h-[56px] text-lg rounded-lg"
+                                loading={loading}
+                                disabled={phoneNumber.length !== 10}
+                            >
+                                Get OTP
                             </Button>
                         </Form.Item>
                     </Form>
-                    <div id="recaptcha-container"></div>
-                </>
+
+                    <div id="recaptcha-container" className="mt-4"></div>
+                </div>
             ) : (
-                <>
-                    {verificationId && <VerifyOTP verificationId={verificationId} setStep={setStep} />}</>
+                verificationId && (
+                    <VerifyOTP 
+                        verificationId={verificationId} 
+                        setStep={setStep}
+                        phoneNumber={phoneNumber}
+                        setPhoneNumber={setPhoneNumber}
+                    />
+                )
             )}
         </div>
     );

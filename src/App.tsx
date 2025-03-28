@@ -8,6 +8,9 @@ import HomePage from './pages/Home'
 import Onboarding from './pages/onboarding'
 import TransactionDetails from './pages/TransactionDetails'
 import Welcome from './pages/Welcome'
+import TransactionHistory from './pages/History/TransactionHistory'
+import IncomingRequests from './pages/Requests/IncomingRequests'
+import OutgoingRequests from './pages/Requests/OutgoingRequests'
 
 function App() {
 
@@ -19,7 +22,7 @@ function App() {
         theme={{
           "components": {
             "Button": {
-              controlHeight: 48,
+              controlHeight: 40,
               fontSize: 16,
             },
             "Input": {
@@ -35,12 +38,16 @@ function App() {
               <Route path='/welcome' element={<Welcome />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/onboarding" element={<Onboarding />} />
-              {/* Protected Routes */}
+  
               <Route element={<ProtectedRoute />}>
-                <Route path="/" element={<HomePage />} /> {/* Example protected page */}
+                <Route path="/" element={<HomePage />} /> 
+                <Route path="/history" element={<TransactionHistory />} /> 
+                <Route path="/incoming" element={<IncomingRequests />} /> 
+                <Route path="/outgoing" element={<OutgoingRequests />} /> 
+
               </Route>
               <Route element={<ProtectedRoute />}>
-                <Route path="/tx/:id" element={<TransactionDetails />} /> {/* Example protected page */}
+                <Route path="/tx/:id" element={<TransactionDetails />} />
               </Route>
             </Routes>
           </Router>

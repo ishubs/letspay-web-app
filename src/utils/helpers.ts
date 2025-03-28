@@ -9,13 +9,13 @@ export function FormattedDate(timestamp : Timestamp ) {
 
 // write a function to format timestamp like 1 jan, 1:30 PM
 
-export function FormattedTime(timestamp : Timestamp ) {
+export const FormattedTime = (timestamp: { seconds: number; nanoseconds: number }) => {
     const date = new Date(timestamp.seconds * 1000);
-    const now = new Date();
-    
-    if (date.toDateString() === now.toDateString()) {
-        return `Today, ${moment(date).format('h:mm A')}`;
-    } else {
-        return moment(date).format('Do MMM, h:mm A');
-    }
-}
+    return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    });
+};

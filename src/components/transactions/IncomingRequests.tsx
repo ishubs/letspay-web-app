@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Card, Empty, message } from 'antd';
 import { collection, query, where } from 'firebase/firestore';
-import { auth, db } from '../firebase';
+import { auth, db } from '../../firebase';
 import { runTransaction, onSnapshot } from 'firebase/firestore';
 import { getDoc, doc } from 'firebase/firestore';
-import { FormattedTime } from '../utils/helpers';
+import { FormattedTime } from '../../utils/helpers';
 
 interface Transaction {
     id: string;

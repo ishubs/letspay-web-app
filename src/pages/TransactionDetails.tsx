@@ -39,6 +39,8 @@ const TransactionDetails = () => {
     }, [])
 
 
+    console.log(state.request)
+
     const setTxDetails = async () => {
 
         const hostName = await getUserName(state.request.hostId)
@@ -85,7 +87,7 @@ const TransactionDetails = () => {
                     <div className='border py-3 px-3 rounded-xl'>
                         <p className='text-xs font-semibold text-gray-600'>Amount</p>
 
-                        <p className='text-2xl my-1 font-semibold'>₹ {transactionDetails?.amount}</p>
+                        <p className='text-2xl my-1 font-semibold'>₹ {transactionDetails?.totalAmount}</p>
                         <Divider />
                         <p className='text-xs font-semibold text-gray-600'>Participants</p>
                         {

@@ -1,15 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Checkbox, Drawer, Card, message } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
 import { InputNumber, Input } from 'antd';
 import { collection, getDocs, runTransaction } from 'firebase/firestore';
-import { db, auth } from '../firebase';
+import { db, auth } from '../../firebase';
 import { doc } from 'firebase/firestore';
 import { serverTimestamp } from 'firebase/firestore';
-import { User } from '../types';
+import { User } from '../../types';
+import UserInitialsCheckbox from '../common/UserInitialsCheckbox';
+import NoData from '../common/NoData';
 
-const AddTransaction: React.FC = () => {
-    const [visible, setVisible] = useState(false);
+interface AddTransactionProps {
+    visible: boolean;
+    onClose: () => void;
+}
+
+const AddTransaction: React.FC<AddTransactionProps> = ({ visible, onClose }) => {
     const [users, setUsers] = useState<User[]>([]);
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
     const [totalAmount, setTotalAmount] = useState<number | null>(null);
@@ -38,14 +43,6 @@ const AddTransaction: React.FC = () => {
             }, 500);
         }
     }, [visible]);
-
-    const showDrawer = () => {
-        setVisible(true);
-    };
-
-    const onClose = () => {
-        setVisible(false);
-    };
 
     useEffect(() => {
         fetchUsers();
@@ -188,19 +185,25 @@ const AddTransaction: React.FC = () => {
         }
     }
 
+    const handleClose = () => {
+        // Reset all states
+        setTotalAmount(null);
+        setDescription("");
+        setSelectedUsers([]);
+        setStep(0);
+        setWhatsappMessageSent(false);
+        onClose();
+    };
 
     return (
         <div>
-            <div className='fixed z-[1000] bottom-8 left-1/2 transform -translate-x-1/2'>
-                <Button className='z-[1000]' onClick={showDrawer} type='primary' icon={<PlusOutlined />}>Add Bill</Button>
-            </div>
             <Drawer
                 title="Add Transaction"
                 placement="bottom"
                 height={"100%"}
                 closable={true}
-                onClose={onClose}
-                visible={visible}
+                onClose={handleClose}
+                open={visible}
                 styles={{
                     content: {
                         // height: '100vh',
@@ -225,10 +228,13 @@ const AddTransaction: React.FC = () => {
                             type="number" pattern="[0-9]*"
                             ref={amountInputRef}
                             value={totalAmount}
+                            id="amount-input"
                             style={{
-                                fontSize: '1.5rem',
-                                borderBottom: '1px solid #000',
+                                fontSize: '2rem',
+                                // borderBottom: '1px solid #000',
                                 borderRadius: 0,
+                                border: 0,
+                                // height: 100
                             }}
                             onChange={(value) => setTotalAmount(value as number)}
                         />
@@ -241,21 +247,35 @@ const AddTransaction: React.FC = () => {
                         <h1 className='mt-4 text-left self-start'>Split with</h1>
                     </div>
                     <div className='mt-4 flex flex-1 flex-col overflow-auto'>
+                        {users.length === 0 && (
+                            <NoData description="No contacts found to split with" />
+                        )}
                         {users && (
                             <div className=' flex flex-col gap-2'>
                                 {users.map((contact) => (
-                                    <Card className='flex justify-between ' key={contact.id}>
-                                        <Checkbox
-                                            checked={selectedUsers.includes(contact.id)}
-                                            onChange={() => handleUserSelect(contact.id)}
-                                        >
-                                            <div>
-                                                {contact.firstName} {contact.lastName}
+                                    <Card 
+                                        className='flex justify-between items-center cursor-pointer' 
+                                        key={contact.id}
+                                        onClick={() => handleUserSelect(contact.id)}
+                                    >
+                                        <div className='flex items-center gap-4 w-full'>
+                                            <UserInitialsCheckbox
+                                                name={`${contact.firstName} ${contact.lastName}`}
+                                                selected={selectedUsers.includes(contact.id)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation(); // Prevent double triggering
+                                                    handleUserSelect(contact.id);
+                                                }}
+                                            />
+                                            <div className='flex flex-col'>
+                                                <div className='font-medium'>
+                                                    {contact.firstName} {contact.lastName}
+                                                </div>
+                                                <div className='text-gray-500 text-sm'>
+                                                    {contact.phoneNumber}
+                                                </div>
                                             </div>
-                                            <div>
-                                                {contact.phoneNumber}
-                                            </div>
-                                        </Checkbox>
+                                        </div>
                                     </Card>
                                 ))}
                             </div>
@@ -291,9 +311,7 @@ const AddTransaction: React.FC = () => {
                             }} className='mt-4'>I have completed the whatsapp message step</Checkbox>
                         </div>
                         <Button disabled={!whatsappMessageSent} className='mt-6' type='primary' onClick={() => {
-                            setVisible(false)
-                            setStep(0)
-                            setWhatsappMessageSent(false);
+                            handleClose();
                         }}>Close</Button>
                     </div>}
             </Drawer>

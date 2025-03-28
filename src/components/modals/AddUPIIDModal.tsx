@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Button, Input, Alert, message } from 'antd';
-import { useAuth } from '../contexts/AuthContext';
-import { db } from '../firebase';
+import { useAuth } from '../../contexts/AuthContext';
+import { db } from '../../firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 

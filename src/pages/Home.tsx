@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Button, Card, Divider, message } from 'antd';
-import IncomingRequests from '../components/IncomingRequests';
-import RecentCashbacks from '../components/RecentCashbacks';
+import IncomingRequests from '../components/transactions/IncomingRequests';
+import RecentCashbacks from '../components/RecentTransactions';
 import AddTransaction from '../components/AddTransaction';
-import Header from '../components/Header';
+import Header from '../components/layout/Header';
+import HowToUse from '../components/common/HowToUse';
+import IncomingRequestsNotification from '../components/common/IncomingRequestsNotification';
 import { auth, db } from '../firebase';
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { messaging } from './../firebase'
 import { getToken, onMessage } from 'firebase/messaging'
-import AddUPIIDModal from '../components/AddUPIIDModal';
+import AddUPIIDModal from '../components/modals/AddUPIIDModal';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { WalletOutlined, CreditCardOutlined } from '@ant-design/icons';
 
 type Limit = {
     availableLimit: number;
@@ -19,7 +23,8 @@ const Home: React.FC = () => {
 
     const [limit, setLimit] = useState<Limit | null>(null);
     const [isNotificationTurnedOn, setIsNotificationTurnedOn] = useState(false);
-    // get the doc from limit collection where userId is equal to current user id
+    const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
+    const [currentUser, setCurrentUser] = useState(auth.currentUser);
 
     useEffect(() => {
         requestPermission()
@@ -30,6 +35,7 @@ const Home: React.FC = () => {
         console.log('Requesting permission...');
         try {
             Notification?.requestPermission().then((permission) => {
+                console.log(permission, " :permission")
                 if (permission === 'granted') {
                     console.log('Notification permission granted.');
                     resetUI();
@@ -101,6 +107,28 @@ const Home: React.FC = () => {
         return () => unsubscribe(); // Cleanup the listener on component unmount
     }, []);
 
+    useEffect(() => {
+        const fetchPendingRequests = async () => {
+            if (!currentUser) return;
+
+            try {
+                const transactionsRef = collection(db, 'transactions');
+                const q = query(
+                    transactionsRef,
+                    where('participants', 'array-contains', currentUser.uid),
+                    where('status', '==', 'pending')
+                );
+
+                const querySnapshot = await getDocs(q);
+                setPendingRequestsCount(querySnapshot.size);
+            } catch (error) {
+                console.error('Error fetching pending requests:', error);
+            }
+        };
+
+        fetchPendingRequests();
+    }, [currentUser]);
+
     // we need the 15th of every month if the current date is less than 15th, we need the 28th of every month if the current date is greater than 15th
     // we need the date in the format 28th november 2021
 
@@ -141,28 +169,40 @@ const Home: React.FC = () => {
         <>
             <Header isNotificationTurnedOn={isNotificationTurnedOn} />
             <div className='p-4 flex flex-col gap-4 overflow-hidden'>
-                {limit && <Card className='flex flex-col shadow-md '>
+                {limit && <Card className='flex flex-col bg-gradient-to-br from-white to-blue-50 shadow-lg'>
                     <div className='flex flex-col'>
-                        <p className='font-bold'>Available Limit</p>
-                        <h1>₹ {limit?.availableLimit.toFixed(2)}</h1>
+                        <div className="flex items-center gap-2 mb-2">
+                            <WalletOutlined className="text-blue-500 text-xl" />
+                            <p className='text-gray-600 font-medium'>Available Limit</p>
+                        </div>
+                        <div className='text-3xl font-bold text-blue-600 mb-6'>₹ {limit?.availableLimit.toFixed(2)}</div>
                     </div>
-                    <Divider />
-                    <div className='flex justify-between'>
+                    <Divider className="my-4" />
+                    <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
                         <div className='flex flex-col'>
-                            <p className='font-bold'>Your bill</p>
-                            <h1>₹ {(Number(limit?.totalLimit) - Number(limit?.availableLimit)).toFixed(2)}</h1>
+                            <div className="flex items-center gap-2 mb-2">
+                                <CreditCardOutlined className="text-gray-500" />
+                                <p className='text-gray-600 font-medium'>Your Bill</p>
+                            </div>
+                            <div className='text-2xl font-bold text-gray-800'>₹ {(Number(limit?.totalLimit) - Number(limit?.availableLimit)).toFixed(2)}</div>
                         </div>
                         <Button
+                            className='h-[50px] bg-blue-500 hover:bg-blue-600 text-white font-medium shadow-md hover:shadow-lg transition-all duration-300'
                             onClick={() => {
                                 window.open('https://forms.gle/TcS3muugokV9Mw6Q9', '_blank')
                             }}
-                            type='primary'>Pay Now</Button>
+                            type='primary'
+                        >
+                            Pay Now
+                        </Button>
                     </div>
-                    <Alert className='mt-4' message={`Bill will be generated on ${dateToBill()}`} type="warning" />
                 </Card>}
-                <IncomingRequests />
-                <RecentCashbacks />
-                <AddTransaction />
+                {pendingRequestsCount > 0 && (
+                    <IncomingRequestsNotification count={pendingRequestsCount} />
+                )}
+                <HowToUse />
+                {/* <IncomingRequests /> */}
+                {/* <RecentCashbacks /> */}
                 <AddUPIIDModal />
                 {/* <RecentTransactions /> */}
             </div>
